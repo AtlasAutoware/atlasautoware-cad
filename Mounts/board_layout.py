@@ -7,7 +7,11 @@ the Traxxas Slash 2WD chassis modelled underneath as keep-outs.
     PLATE=v2 python3 board_layout.py        # Baseplate v2 (baseplate_v2.py) instead of the STL:
                                             # all nine mounts placed, outputs out/board_layout_v2_*
                                             # (six on clipless, the cable tidy on the plate edge, the
-                                            # VESC on a tub saddle, the LiPo frame as the Omni alternative)
+                                            # VESC on a tub saddle, the LiPo frame as the Omni alternative);
+                                            # lidar in front on B1+B2, mast behind it on A3+B3, and the
+                                            # report includes the lidar's occluded sectors and the
+                                            # camera's line of sight over the lidar per pitch step
+    PLATE=v2 ATTEMPT=mastB3C3 python3 board_layout.py   # the centred mast pairs, to show why not
 
 Board frame: +x forward, +y left, +z up, origin at the plate's centre, plate top at z=0.
 FRONT_END decides which end of templates/Baseplate.stl is the front (see LAYOUT.md).
@@ -51,13 +55,20 @@ os.environ['PITCH_Y'] = str(PITCH_Y)
 # On the 3.175 plate the mounts sit on the plate (ABOVE_Z 0), fingers 34.3, scan 44.8.
 os.environ.setdefault('LIDAR_SCAN_CLEARANCE', '45.5')
 if PLATE == 'v2':
-    # v2 placement needs: the plinth's front bar wall at 3.5 (0.5 mm clear of the mast bar
-    # one column ahead), a four-post 100 mm tidy, the small-board plate shifted 10.75 so
-    # its rear end clears the mast bar. All parametric, all >= the 3 mm wall rule.
-    os.environ.setdefault('BAR_END', '3.5')
+    # v2 placement needs: a four-post 100 mm tidy, and the small-board plate at PLATE_OFFSET
+    # 10.75 (the most aft the plate's own rim rule allows; with rot 180 a LARGER offset moves
+    # the plate AFT: front end 134.25 instead of 136.5 at the default 8.5, away from the front
+    # tyre's lock sweep). All parametric, all >= the 3 mm wall rule. (The plinth's BAR_END=3.5
+    # of the superseded mast-in-front layout is no longer needed: the plinth is now on
+    # columns 1-2 with nothing ahead of its bar; default 5.)
     os.environ.setdefault('L', '100'); os.environ.setdefault('N_POST', '4')
     os.environ.setdefault('EDGE', '1')          # cable tidy: edge variant, bolted through the zip holes
     os.environ.setdefault('PLATE_OFFSET', '10.75')
+# camera mast and lidar plinth holes on v2 (LAYOUT.md section 19): lidar in front on B1+B2,
+# mast behind it on A3+B3. ATTEMPT=mastB3C3 / mastB4C4 show why the centred mast positions
+# the owner asked for first do not fit (Jetson tray under C3, Omni cradle over column 4).
+MAST_HOLES = {'mastB3C3': ('B3', 'C3'), 'mastB4C4': ('B4', 'C4')}.get(os.environ.get('ATTEMPT', 'final'), ('A3', 'B3'))
+LIDAR_HOLES_V2 = ('B1', 'B2')
 # VESC tub saddle placement (v2): tray rear end x. The case's rear face (x0 + 3.5) is then
 # 0.25 ahead of the Jetson tray's end at 28.5; the tray's front end (x0 + 99) is 3.75 behind the
 # steering linkage model at 128 and 2.25 into the servo model's rear top corner (LAYOUT.md "Final set")
@@ -77,6 +88,7 @@ if not os.environ.get('SKIP_REGEN'):
                  ('cable_tidy_mount.py', {'EDGE': '1'}),
                  ('vesc_tub_bracket_mount.py', {}),
                  ('rplidar_c1_mount.py', {'OUT_SUFFIX': '_v2'}),
+                 ('camera_mast_mount.py', {'OUT_SUFFIX': '_v2', 'LIDAR_X': '60', 'LIDAR_Y': '-20.5'}),   # feet at PITCH_Y 41, lidar one column ahead
                  ('small_board_plate_mount.py', {'RETAIN': 'recess', 'OUT_SUFFIX': '_v2'}),
                  ('liteon_45w_brick_mount.py', {'RETAIN': 'recess', 'PITCH_Y': str(2 * PITCH_Y), 'FEET_X_OFFSET': '13.5', 'OUT_SUFFIX': '_v2'})]
         # (FEET_X_OFFSET 13.5 = column 8 behind the brick centre; asserted against the computed value below)
@@ -349,30 +361,38 @@ ATTEMPT = os.environ.get('ATTEMPT', 'final')   # 'final', or 'jetson' / 'vesc' /
 
 
 def build_mounts_v2():
-    """Placement on Baseplate v2 (LAYOUT.md, "Baseplate v2"). Same dict format as
-    build_mounts(). Above: mast on A1+B1, lidar plinth on A2+A3, cradle on B5+B6, cup on
-    A8+C8, small-board plate on D1+D2. Below: Jetson tray on D4+D5. ATTEMPT=tidy / vesc adds
-    the cable tidy (C1+C2 below) / the VESC tray (C2+C3 below) where they come closest, to
-    show the numbers."""
+    """Placement on Baseplate v2 (LAYOUT.md section 19). Same dict format as
+    build_mounts(). Above: lidar plinth in FRONT on B1+B2, mast behind it on A3+B3, cradle on
+    B5+B6, cup on A8+C8, small-board plate on D1+D2. Below: Jetson tray on D4+D5. Off the
+    grid: cable tidy on the plate edge, VESC on the tub saddle. ATTEMPT=tidy / vesc adds the
+    clipless cable tidy (C1+C2 below) / VESC tray (C2+C3 below) where they come closest;
+    ATTEMPT=mastB3C3 / mastB4C4 put the mast on the centred pairs, to show the numbers."""
     H = ALL_HOLES
     M = {}
     mid = lambda a, b: ((H[a][0] + H[b][0]) / 2, (H[a][1] + H[b][1]) / 2)
 
-    # camera mast: column 1, feet across on rows A and B (its floor bar then ends at y 1.25 and
-    # the whole right-hand band of the plate, y < 1.25, is free for the small-board plate and
-    # the tidy); camera forward, channel open to +y
-    cx, cy = mid('A1', 'B1')
-    m, sd = MAST.mast(), MAST.saddle()
-    M['camera_mast'] = dict(side='above', holes=['A1', 'B1'], centre=(cx, cy), rot=0,
-                            parts=[('mast', place_above(m, cx, cy)), ('head', place_above(sd, cx, cy))],
-                            feet=[place_above(f, cx, cy) for f in MAST.feet()],
-                            env=[('camera', place_above(MAST.envelope(), cx, cy))])
-    # lidar plinth: row A (car left), columns 2 and 3, connector notch aft
-    cx, cy = mid('A2', 'A3')
-    M['rplidar_c1'] = dict(side='above', holes=['A2', 'A3'], centre=(cx, cy), rot=0,
+    # lidar plinth: FRONT, row B, columns 1 and 2 (feet along x), connector notch aft, so
+    # nothing on the board crosses its scan plane in the forward half. Body x 63.95..126.05,
+    # y -10.55..51.55; the front cutouts start at x 160, the front posts are 25 mm tall (scan
+    # plane 44.8), the tyres at |y| > 81.
+    cx, cy = mid(*LIDAR_HOLES_V2)
+    M['rplidar_c1'] = dict(side='above', holes=list(LIDAR_HOLES_V2), centre=(cx, cy), rot=0,
                            parts=[('plinth', place_above(LIDAR.plinth(), cx, cy))],
                            feet=[place_above(f, cx, cy) for f in LIDAR.feet()],
                            env=[('lidar', place_above(LIDAR.envelope(), cx, cy))])
+    # camera mast: BEHIND the lidar on column 3, feet across on rows A and B (centre (35, 41)):
+    # its bar (x 14.75..55.25, y 0.75..81) stops 0.25 mm behind the plinth's bar and its four
+    # legs cross the scan plane 47 to 91 mm behind the lidar axis, all in the rear half. The
+    # centred pairs do not work: a from-below piece at C3 has its flange under the plate where
+    # the Jetson tray's front-inboard corner is (x 18.5..28.5, y -37..-18.5), and a mast on
+    # column 4 has its bar 27 mm into the Omni cradle (front at x 2.1). Camera forward,
+    # channel open to +y (the mast slides on from the left edge).
+    cx, cy = mid(*MAST_HOLES)
+    m, sd = MAST.mast(), MAST.saddle()
+    M['camera_mast'] = dict(side='above', holes=list(MAST_HOLES), centre=(cx, cy), rot=0,
+                            parts=[('mast', place_above(m, cx, cy)), ('head', place_above(sd, cx, cy))],
+                            feet=[place_above(f, cx, cy) for f in MAST.feet()],
+                            env=[('camera', place_above(MAST.envelope(), cx, cy))])
     # Omni cradle: row B, columns 5 and 6, AC outlet edge to the rear
     cx, cy = mid('B5', 'B6')
     pack = (cq.Workplane('XY').rect(*OMNI.OMNI[:2]).extrude(OMNI.OMNI[2]).edges('|Z').fillet(8)
@@ -392,8 +412,9 @@ def build_mounts_v2():
                            feet=[place_above(f, bx, by, 180) for f in LITE.feet()],
                            env=[('brick', place_above(LITE.envelope(), bx, by, 180))])
     # small-board plate: ABOVE, row D (car right), columns 1 and 2, turned 180 so its long end
-    # points aft (PLATE_OFFSET 10.75: front end at x 134.25, behind the front tyre's full-lock
-    # sweep; its clipless flanges under the plate end at x 58.5, clear of the Jetson tray)
+    # points aft (PLATE_OFFSET 10.75: x 34.25..134.25, front end behind the front tyre's
+    # full-lock sweep; its clipless flanges under the plate end at x 58.5, clear of the Jetson
+    # tray; inboard edge y -31.5, 21 mm from the plinth body)
     cx, cy = mid('D1', 'D2')
     pl, _ = SBP.plate()
     M['small_board_plate'] = dict(side='above', holes=['D1', 'D2'], centre=(cx, cy), rot=180,
@@ -742,6 +763,56 @@ if __name__ == '__main__':
     tallest.sort(reverse=True)
     print(f'\nlidar scan plane {scan_z:.2f} above the board top; tallest above-board items: {tallest[:4]}')
 
+    # what crosses the scan plane, as the lidar sees it: (a) every solid other than the lidar's
+    # own, sliced at scan_z, as bearing sectors from the lidar axis; (b) the mast legs
+    # analytically (camera_mast_mount.scan_occlusion) as a cross-check
+    lidar_c = M['rplidar_c1']['centre']
+    occlusion = []
+    slab = box(XL - 200, XR + 200, YL - 200, YR + 200, scan_z - 0.05, scan_z + 0.05)
+    for lab, g, s in S:
+        if lab.startswith('rplidar_c1') or g == 'board':
+            continue
+        b = bbox(s)
+        if b[4] > scan_z or b[5] < scan_z:
+            continue
+        cut = s.intersect(slab)
+        for sol in cut.val().Solids() if cut.val().Volume() > 1e-6 else []:
+            vs = [(v.X - lidar_c[0], v.Y - lidar_c[1]) for v in sol.Vertices()]
+            angs = [math.degrees(math.atan2(y, x)) for x, y in vs]
+            rng = min(math.hypot(x, y) for x, y in vs)
+            # angular span (handle the +-180 wrap by working around the mean bearing)
+            mean = math.degrees(math.atan2(sum(math.sin(math.radians(a)) for a in angs), sum(math.cos(math.radians(a)) for a in angs)))
+            rel = [((a - mean + 180) % 360) - 180 for a in angs]
+            occlusion.append(dict(solid=lab, range=round(rng, 1), bearing=round(mean, 1), width=round(max(rel) - min(rel), 1),
+                                  sector=(round(mean + min(rel), 1), round(mean + max(rel), 1))))
+    occlusion.sort(key=lambda o: o['bearing'])
+    fwd = [o for o in occlusion if abs(o['bearing']) - o['width'] / 2 < 90]
+    print(f'\nin the scan plane, from the lidar axis {lidar_c} (bearing from dead ahead, +left; C1 datasheet angle = 360 - bearing):')
+    for o in occlusion:
+        print(f"  {o['solid']:28s} range {o['range']:6.1f}  bearing {o['bearing']:7.1f}  width {o['width']:5.1f}  sector {o['sector']}")
+    print('  forward half (-90..+90):', 'CLEAR' if not fwd else fwd)
+    # (the mast module's z convention is part z + RIM_PROUD = "above the board top" for a
+    # mount sitting on the rim; here the mounts sit ABOVE_Z above the board, so convert)
+    mast_c = M['camera_mast']['centre']
+    to_mast_z = lambda z_board: z_board - ABOVE_Z + MAST.RIM_PROUD
+    rel_lidar = (lidar_c[0] - mast_c[0], lidar_c[1] - mast_c[1])
+    legs = MAST.scan_occlusion(rel_lidar, to_mast_z(scan_z))
+    print('  (analytic legs:', [(l['leg'], l['range'], l['bearing'], l['width']) for l in legs], ')')
+
+    # camera line of sight over the lidar: pitch steps 0..-20, depth V FOV 65 (RGB 55)
+    lidar_top = ABOVE_Z + LIDAR.Z_DECK + LIDAR.LIDAR_BASE_H + LIDAR.LIDAR_HEAD_H
+    los = {}
+    for fov in (MAST.CAM_VFOV, 55.0):
+        los[fov] = MAST.lidar_in_view(rel_lidar, to_mast_z(lidar_top), vfov=fov)
+        for r in los[fov]:                       # back to board coordinates for the report
+            r['lens_x'] = round(r['lens_x'] + mast_c[0], 1)
+            r['lens_z'] = round(r['lens_z'] - MAST.RIM_PROUD + ABOVE_Z, 1)
+    print(f'\ncamera over the lidar (lens {mast_c[0] + MAST.lens_xyz(0)[0]:.1f} x, lidar top {lidar_top:.1f}, V FOV {MAST.CAM_VFOV:.0f}):')
+    for r in los[MAST.CAM_VFOV]:
+        print(f"  pitch {r['pitch']:4d}: lens ({r['lens_x']:.1f}, {r['lens_z']:.1f}), lidar edge dx {r['lidar_edge_dx']}, dz {r['lidar_edge_dz']}, "
+              f"elevation {r['lidar_elev']}, image bottom {r['image_bottom']}, lidar {r['margin_below_image']} deg below the image")
+    print(f"  lidar top enters the depth image at pitch {los[MAST.CAM_VFOV][0]['enters_at_pitch']}, the RGB image (V 55) at {los[55.0][0]['enters_at_pitch']}")
+
     # ---- exports ----
     a = cq.Assembly(name='board_layout')
     colours = {'mount': (0.9, 0.45, 0.1), 'foot': (0.2, 0.5, 0.9), 'envelope': (0.35, 0.35, 0.35),
@@ -751,7 +822,9 @@ if __name__ == '__main__':
     a.save(os.path.join(OUT, f'board_layout{SFX}_assembly.step'))
     json.dump({'holes': ALL_HOLES, 'claims': claims, 'placements': {k: {'side': v['side'], 'holes': v['holes'],
               'centre': v['centre'], 'rot': v['rot']} for k, v in M.items()}, 'interference': rows,
-               'clearance': rep, 'tub': trep, 'chassis': CHASSIS, 'UNDER_CLEARANCE': UNDER_CLEARANCE},
+               'clearance': rep, 'tub': trep, 'chassis': CHASSIS, 'UNDER_CLEARANCE': UNDER_CLEARANCE,
+               'scan_plane_z': scan_z, 'scan_occlusion': occlusion, 'scan_forward_half_clear': not fwd,
+               'mast_legs_analytic': legs, 'camera_line_of_sight': {str(k): v for k, v in los.items()}},
               open(os.path.join(OUT, f'board_layout{SFX}_report.json'), 'w'), indent=1, default=str)
 
     # ---- renders ----

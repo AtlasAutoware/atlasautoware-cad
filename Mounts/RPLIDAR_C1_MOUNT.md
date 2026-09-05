@@ -117,13 +117,42 @@ deck spans to the walls are bridges. 0.2 mm layers, 3 walls, 30 % infill, PLA is
 PETG if the snap tongues are to be worked many times. Fit tuning: `FOOT_CLR` in
 `clipless.py` is shared; `BUMP_H` (0.6) and `TONGUE_L` (14.5) set the snap force.
 
-Screws: 4 x M2.5 x 8 socket head (not longer: 4 mm into the lidar is the limit). The 2D
-lidar sees the camera mast legs ahead of it; see `CAMERA_MAST_MOUNT.md` for the angles to
-mask in the driver.
+Screws: 4 x M2.5 x 8 socket head (not longer: 4 mm into the lidar is the limit).
+
+## Where it goes on Baseplate v2, and what the lidar sees
+
+LAYOUT.md section 19: the plinth is the front-most thing on the board, on B1+B2 (feet along
+the car at x 115 and 75, centre (95, 20.5), 20.5 mm left of the centreline), connector
+notch aft, `PEG_PITCH=40` (`out/rplidar_c1_v2.*`, `OUT_SUFFIX=_v2`, written by
+`board_layout.py`). Deck at 15 (`LIDAR_SCAN_CLEARANCE` 45.5 in the layout), so on the
+3.175 mm plate the scan plane is 44.8 above the plate top and the lidar top 56.3. The
+first v2 placement had it on A2+A3 with the camera mast one column AHEAD of it, whose legs
+cut the scan in the forward-right quadrant; the mast is now one column BEHIND it (A3+B3),
+so nothing on the board crosses the scan plane in the forward half. What does cross it,
+all in the rear half, are the mast's four legs, at 47 to 90 mm:
+
+| bearing from dead ahead (+left) | C1 datasheet angle (clockwise) | what |
+| --- | --- | --- |
+| -175.6 .. -161.7 | 161.7 .. 175.6 | both right-hand legs, one behind the other |
+| 127.9 .. 135.4 | 224.6 .. 232.1 | front-left leg |
+| 142.6 .. 148.3 | 211.7 .. 217.4 | rear-left leg |
+
+Mask those in the driver (angle filters) or drop returns under 0.10 m; the front-right leg
+at 46.7 mm is inside the C1's 0.05 m minimum range anyway. Everything else on the board is
+under the plane (cup fingers 34.3, brick 32, pack 31, front body posts 25, tyres at full
+bump +15.8). The lead leaves the rear notch onto the bar's rear extension at (55.5..64,
+20.5) and drops through hole C2 (75, -20.5), 21 mm of which is open between this plinth's
+wall and the small-board plate's edge; the XH-USB adapter is zip-tied under the plate at
+the C2/C3 web, 15 mm above the VESC saddle's case. The plinth slides on from the rear over
+B1+B2 BEFORE the mast goes on (it starts over the mast's footprint); to remove it, the
+mast comes off first. Its bar's rear end is 0.25 mm ahead of the mast's bar; both parts
+float +-2 mm on their pegs, so they may touch, at floor level, which costs nothing.
 
 ## Parameter added for Baseplate v2
 
 `BAR_END` (default 5.0, minimum 3.0): thickness of the floor bar's front end wall beyond
-the channel stop. The v2 layout uses 3.5 so the plinth on columns 2-3 stops 0.5 mm short
-of the camera mast's bar on column 1 (`out/rplidar_c1_v2.*`, `OUT_SUFFIX=_v2`); all
-checks unchanged (single solid, zero intersections, play 1.75).
+the channel stop. The first v2 placement (plinth on columns 2-3 behind the mast on column
+1) needed 3.5 to stop 0.5 mm short of the mast bar; with the plinth in front on columns
+1-2 nothing is ahead of its bar and the default 5 is used again (bar x 55.5..135.75 on the
+board, 24 mm behind the front cutouts and 41 behind the front body posts). All checks
+unchanged (single solid, zero intersections, play 1.75).

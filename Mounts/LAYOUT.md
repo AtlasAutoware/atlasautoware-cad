@@ -10,7 +10,10 @@ parameters). `UNDER_CLEARANCE=40 python3 board_layout.py` re-runs at another cle
 (section 7); `SKIP_REGEN=1` skips the mount-script regeneration. **Baseplate v2**, the
 laser-cut replacement plate with the 40 x 41 grid, is sections 12-18
 (`PLATE=v2 python3 board_layout.py`); **section 19 is the final set on v2**, with the cable
-tidy on the plate edge and the VESC on a tub saddle, neither on clipless feet.
+tidy on the plate edge and the VESC on a tub saddle, neither on clipless feet, and with the
+lidar moved to the front (B1+B2) and the camera mast behind it (A3+B3) so the lidar's
+forward half is unobstructed; section 19 also has the lidar's occluded sectors and the
+camera's line of sight over the lidar per pitch step.
 
 ## 0. Result in one paragraph
 
@@ -314,7 +317,8 @@ body posts; `UNDER_CLEARANCE=40 TAG=_uc40`.
 ## 12. Result in one paragraph
 
 (Sections 12-18 are the clipless-only attempt; section 19 supersedes their "does not
-fit" rows for the cable tidy and the VESC.) Six of the nine mounts fit on Baseplate v2
+fit" rows for the cable tidy and the VESC, and their mast / plinth positions: the plinth is
+now in front on B1+B2 and the mast behind it on A3+B3, see section 19.) Six of the nine mounts fit on Baseplate v2
 with zero interference, one more than on the
 STL plate, and the one that was the point of the exercise, the Jetson tray, is among them:
 above the board the camera mast (A1+B1), the RPLIDAR C1 plinth (A2+A3), the Omni 20+
@@ -397,6 +401,10 @@ should ignore. Plate 161 cm3, about 110 g in birch ply.
   3.175 case). On 3 mm acrylic they sit 0.13 higher; nothing changes.
 
 ## 15. Placement on v2 (hole assignment, both faces)
+
+(Superseded for the camera mast and the lidar plinth, and for the hole table: section 19
+has the plinth on B1+B2 and the mast on A3+B3. The rows below are kept as the record of the
+first v2 placement, where the mast stood in front of the lidar.)
 
 | mount | face | holes | centre (x, y) | rot | where it ends up |
 | --- | --- | --- | --- | --- | --- |
@@ -505,11 +513,12 @@ and the tyres deeper into the plate corners (32.6 mm3), as with the STL plate; t
 the chassis estimates, not the layout. At 35 nothing deeper than 31 mm hangs anywhere.
 
 Above the board: mast head 148.9 (lens), lidar top 56.3, scan plane 44.8, cup fingers
-34.3, brick 32.0, pack 31.0, PCA9685 headers 23.6, cradle posts 18.0. The mast's four
-legs are 40 to 80 mm from the lidar's axis, bearing 5 to 30 degrees right of straight
-ahead: at the scan height they are four 6 mm obstacles, about 5 degrees of arc each, in the
-forward-right quadrant (in the STL layout they were in the forward-left one at the same
-distance). Mask them in the driver.
+34.3, brick 32.0, pack 31.0, PCA9685 headers 23.6, cradle posts 18.0. In this placement
+the mast's four legs were 40 to 80 mm from the lidar's axis, bearing 5 to 30 degrees right
+of straight ahead: four 6 mm obstacles, about 5 degrees of arc each, in the forward-right
+quadrant (in the STL layout they were in the forward-left one at the same distance). That
+is the sector a racing car needs most, which is why section 19 swaps the two: the legs are
+then in the rear half only.
 
 Cables. Camera: the Gemini 335's USB-C leaves the head on the -y (right) end 137 mm up,
 comes straight down the mast's right-hand rear leg (leg base at (98, 3)), and drops through
@@ -575,10 +584,11 @@ battery hold-down, spur cover, servo horn, body-post spacing, outlet position, m
 position, brick size, clamp height):
 
 1. Front tyre inner face at full lock with the suspension bottomed, at x 134 (the
-   small-board plate's front end) and y -91.5: the model gives 0.75 mm. If it is less,
-   `PLATE_OFFSET=8.5` moves the plate 2.25 mm aft (its rear end is then 2 mm from the
-   Jetson's D4 piece), or the plate turns 180 on the same holes (`rot=0` in
-   `build_mounts_v2`) and its front end goes to 155.
+   small-board plate's front end) and y -91.5: the plan-view figure here was 0.75 mm; the
+   solid model's closest approach is 14.4 mm (section 19). Note that with the plate turned
+   180, `PLATE_OFFSET=8.5` moves it 2.25 mm FORWARD (10.75 is the most aft the rim rule
+   allows); the other way out if the tyre is closer than modelled is a shorter plate
+   (the PCA9685 note in section 19).
 2. Motor can: front face x and its top height (the free hole D6 is over it; the Jetson's
    heatsink is 34 mm ahead of it in the model).
 3. Rear body posts: confirm they can come off, or measure the outlet offset for the
@@ -598,29 +608,64 @@ position, brick size, clamp height):
 
 ## 19. Final set on v2
 
-`PLATE=v2 python3 board_layout.py` now builds all of this (regenerating `baseplate_v2`,
-the Jetson `_under` tray, `cable_tidy_edge`, `vesc_tub_bracket`, the `_v2` plinth,
+`PLATE=v2 python3 board_layout.py` builds all of this (regenerating `baseplate_v2`, the
+Jetson `_under` tray, `cable_tidy_edge`, `vesc_tub_bracket`, the `_v2` plinth, mast,
 small-board plate and cup) and writes `out/board_layout_v2_*`; `UNDER_CLEARANCE=40
-TAG=_uc40` is the 40 mm run. The two mounts that had no clipless footprint left (section
-17) are on the car without clipless feet: the cable tidy hangs off the plate's right edge
-on two M5 screws through the zip-tie holes (`cable_tidy_mount.py`, `EDGE=1`,
-CABLE_TIDY_MOUNT.md), and the VESC tray sits on a clamp-on saddle over the tub's right
-side rail (`vesc_tub_bracket_mount.py`, VESC_TUB_BRACKET_MOUNT.md). The old
-`out/board_layout_v2_tidy_*` and `_vesc_*` files are the section 17 attempts and predate
-this section.
+TAG=_uc40` is the 40 mm run, `PITCH_Y=40 TAG=_p40` and `POSTS=both TAG=_posts` the section
+13 / 15 variants (their conclusions are unchanged, see the interference table). The two
+mounts that had no clipless footprint left (section 17) are on the car without clipless
+feet: the cable tidy hangs off the plate's right edge on two M5 screws through the zip-tie
+holes (`cable_tidy_mount.py`, `EDGE=1`, CABLE_TIDY_MOUNT.md), and the VESC tray sits on a
+clamp-on saddle over the tub's right side rail (`vesc_tub_bracket_mount.py`,
+VESC_TUB_BRACKET_MOUNT.md). The old `out/board_layout_v2_tidy_*` and `_vesc_*` files are
+the section 17 attempts and predate this section.
+
+### Lidar in front, mast behind it (supersedes the mast / plinth rows of section 15)
+
+Sections 15-16 had the camera mast on A1+B1 (x 115) IN FRONT of the RPLIDAR C1 on A2+A3
+(x 55): the mast's four legs crossed the lidar's scan plane (44.8 above the plate) in the
+forward-right quadrant, 5 to 30 degrees off dead ahead, which is the sector a racing car
+needs most. Fixed by swapping them: the plinth goes to the front on **B1+B2** (feet along
+x at 115 and 75, centre (95, 20.5), connector notch aft) and the mast behind it on
+**A3+B3** (feet across on rows A and B at column 3, centre (35, 41)), head looking forward
+over the lidar. Nothing on the board now crosses the scan plane in the forward half; the
+only things that cross it anywhere are the mast legs, in the rear half (sectors below).
+
+Why A3+B3 and not the centred pairs the owner asked for first (`ATTEMPT=mastB3C3` /
+`mastB4C4` reproduce them, outputs `out/board_layout_v2_mastB3C3_*`, `_mastB4C4_*`):
+
+- **B3+C3** (centre (35, 0)): an above-board mount uses clipless pieces from BELOW, and the
+  C3 piece's 33 x 33 x 12.85 flange under the plate (x 18.5..51.5, y -37..-4) is where the
+  Jetson tray's front-inboard corner hangs (tray x -78.5..28.5, y -104.5..-18.5): 1272 mm3
+  piece and 413 mm3 foot into the tray, exactly the "C3: no, Jetson tray 1272" row of the
+  section 15 hole table. The mast bar (y -40.25..40.25 when centred) also lands on the
+  small-board plate's inboard 8.75 mm (360 mm3 plate, 481 hub, 114 foot). Moving the Jetson
+  tray is not an option (D4+D5 are the only holes it can hang from, section 17), and the
+  small-board plate cannot go further aft on D1+D2 (rim rule, `PLATE_OFFSET` max 10.75) or
+  forward (tyre).
+- **B4+C4** (centre (-5, 0)): the mast bar (x -25.25..15.25) is 27 mm into the Omni cradle
+  (front at x 2.1): 3006 mm3 mast x pack, 603 mast x cradle, 1822 + 1700 feet x cradle, and
+  the C4 piece is 2046 into the Jetson tray as well.
+- **A3+B3**: pieces under the plate at x 18.5..51.5, y 4..78, over the battery bay model
+  (26 mm above its hold-down) and the tub's left wall; nothing else under there. Mast bar
+  x 14.75..55.25, y 0.75..81 (legs to y 0 / 82, 6.75 inside the plate edge), 0.25 mm behind
+  the plinth's bar, 12.65 ahead of the cradle, 31.6 from the small-board plate. The camera
+  ends up 41 mm left of the centreline, where it already was in section 15, and 20.5 mm
+  left of the lidar axis. B3+C3 would have centred it; that costs a Jetson tray 10 mm
+  shorter or the thin-flange piece of section 9.3.
 
 ### The nine mounts
 
 | mount | how it attaches | where | numbers |
 | --- | --- | --- | --- |
-| camera mast (Gemini 335) | clipless, A1+B1, above | (115, 41), rot 0 | unchanged from section 15 |
-| RPLIDAR C1 plinth | clipless, A2+A3, above | (55, 61.5), rot 0 | unchanged |
-| Omni 20+ cradle | clipless, B5+B6, above | (-65, 20.5), rot 0 | unchanged |
+| RPLIDAR C1 plinth | clipless, B1+B2, above | (95, 20.5), rot 0 | `BAR_END` back to its default 5 (nothing ahead of the bar now): floor bar x 55.5..135.75, y 0.25..40.75; body x 63.95..126.05, y -10.55..51.55 (its 3 mm wall stands on 4.3 mm of the A1, A2, C1 and C2 holes); lidar base x 67.2..122.8, y -7.3..48.3, head R 22, top 56.3, scan plane 44.8; connector housing at the rear, x 61.2..67.2; 41 mm behind the front body posts (25 tall, under the scan plane), 24 mm behind the front cutouts, B1's flange under the plate (x 98.5..131.5, 12.85 deep) passes 17 mm above the steering-linkage model, whose rear 3.5 mm is under it in plan, and ends 29 mm behind the front clamp block; 42 mm from the front-left tyre at full lock and bump (the lidar 53) |
+| camera mast (Gemini 335) | clipless, A3+B3, above | (35, 41), rot 0 | `PITCH_Y` 41, `CAM_HEIGHT` 150 unchanged; bar x 14.75..55.25, y 0.75..81; legs from (17.75 / 52.25, 3 / 79) up to (25 / 45, 21.5 / 60.5) at 104; drum axis 112.4, head x 21..54, camera x 24..54, y -21.7 (USB-C plug stub) .. 85.7, z 136.4..161.4; lens (54, 41, 148.9) at 0 pitch, 41 mm behind the lidar axis and 92.6 above its top; legs 8.7 from the plinth body, 9.0 from the lidar envelope |
+| Omni 20+ cradle | clipless, B5+B6, above | (-65, 20.5), rot 0 | unchanged (section 15) |
 | Lite-On 45 W cup | clipless, A8+C8, above | (-171.5, 20.5), rot 180 | unchanged |
-| small-board plate (PCA9685 + hub) | clipless, D1+D2, above | (95, -61.5), rot 180 | unchanged; see the note on the PCA9685 below |
+| small-board plate (PCA9685 + hub) | clipless, D1+D2, above | (95, -61.5), rot 180 | unchanged: `PLATE_OFFSET` 10.75, x 34.25..134.25, y -91.5..-31.5 (a larger offset moves it AFT, 10.75 is the rim-rule maximum; section 18 item 1 had the direction backwards); 21 mm from the plinth body; closest approach to the front-right tyre's lock + bump sweep 14.4 mm in the solid model (the 0.75 of section 16 was a plan-view figure against the sweep's footprint at rim level); see the note on the PCA9685 below |
 | Jetson Orin Nano tray | clipless, D4+D5, below | (-25, -61.5), rot 180 | unchanged; tray x -78.5..28.5, y -104.5..-18.5, 46.35 deep |
 | cable tidy, edge variant | two M5 x 16 + nyloc through the zip holes at (-105, -82) and (-145, -82); no clipless | rail body x -112..-12, y -125.6..-89.0 (inboard face 0.25 off the plate edge at -88.75), z 0..23.5 above the plate top; pads on the plate top to y -76; ledge x -152..-112 along the edge | 100 mm, four posts, 36 wide; 27.8 cm3. Rail top 23.5 (limit 24), 21.3 under the lidar scan plane |
-| VESC FSESC 6.7 on the tub saddle | clamp-on saddle on the tub's right rail (y -50, RAIL_W 12, RAIL_H 18), two 25 mm straps, four 3.2 mm holes for the tub's ESC bosses; no clipless | tray x 25.25..124.25, y -3.5..-105.5 (tabs to +8.5 / -117.5), turned 90 (XT90 inboard, phase leads outboard); floor 6 below the rim (`SADDLE_DROP` 6), case 3..27.5 above the rim, fingers 29.8; legs 18 below the rim | 58 cm3; margins: 0.25 to the Jetson tray, 2.35 under the D1/D2 flanges, 3.75 to the linkage, 0.5 to the front tyre's inner face; 2.25 mm INTO the steering servo estimate (below) |
+| VESC FSESC 6.7 on the tub saddle | clamp-on saddle on the tub's right rail (y -50, RAIL_W 12, RAIL_H 18), two 25 mm straps, four 3.2 mm holes for the tub's ESC bosses; no clipless | tray x 25.25..124.25, y -3.5..-105.5 (tabs to +8.5 / -117.5), turned 90 (XT90 inboard, phase leads outboard); floor 6 below the rim (`SADDLE_DROP` 6), case 3..27.5 above the rim, fingers 29.8; legs 18 below the rim | 58 cm3; margins: 0.25 to the Jetson tray, 2.35 under the D1/D2 flanges and now also under the plinth's B2 flange (its inboard tab reaches y 8.5, the flange starts at y 4), 3.75 to the linkage, 0.5 to the front tyre's inner face; 2.25 mm INTO the steering servo estimate (below) |
 | LiPo SMC 9000 frame | clipless, B5+C5+B6+C6, above (the Omni alternative) | (-65, 0), rot 0 | as section 15: the pack stays in the chassis tray; the frame replaces the cradle if the Omni is not carried |
 
 All nine are placed. What is not zero is one row in the model, and it is against an
@@ -647,6 +692,114 @@ screw goes to -145 and the rail carries a 40 mm ledge along the edge to reach it
 ledge is 11.75 mm wide outboard of the edge, 5.75 mm inboard of the rear tyre's inner
 face, and the tyre at full bump is 14 mm below the ledge there.
 
+Assembly order: the plinth slides onto B1+B2 from the rear (its channel is open at -x, so
+it starts 40 mm aft, over the mast's footprint) and goes on FIRST; the mast then slides
+onto A3+B3 from the left edge (channel open at +y). To take the plinth off, the mast comes
+off first. The Jetson tray slides on from the front under the plate with the board out,
+as before.
+
+### What the lidar sees: occluded sectors
+
+The script slices every solid other than the lidar's own at the scan plane (44.8 above the
+plate top) and reports each piece as a range, bearing and width from the lidar axis at
+(95, 20.5); bearing is from dead ahead, positive to the LEFT (right-hand, as the board
+frame), and the C1 datasheet's clockwise angle is 360 minus it. `camera_mast_mount
+.scan_occlusion()` gives the same four legs analytically (leg centres, with a 0.75 x 6 mm
+half-width so the 8.5 mm diagonal is covered), and that is the wider, safer set to mask:
+
+| what | range (mm) | bearing (deg, +left) | width (deg) | sector to mask (deg) | C1 datasheet angle |
+| --- | --- | --- | --- | --- | --- |
+| mast front-right leg | 46.7 | -167.2 | 11.0 | -172.7 .. -161.7 | 161.7 .. 172.7 |
+| mast rear-right leg | 75.1 | -172.1 | 6.9 | -175.6 .. -168.7 (merges with the above: -175.6 .. -161.7) | 168.7 .. 175.6 |
+| mast front-left leg | 68.6 | 131.6 | 7.5 | 127.9 .. 135.4 | 224.6 .. 232.1 |
+| mast rear-left leg | 90.4 | 145.4 | 5.7 | 142.6 .. 148.3 | 211.7 .. 217.4 |
+| everything else on the board | - | - | - | none: lidar top 56.3, next tallest the cup fingers at 34.3, brick 32, pack 31, tidy caps 23.5, PCA headers 23.6, front body posts 25, tyres at full bump +15.8 | |
+
+Three sectors, 27.2 degrees in total, all between 128 and 198 degrees, i.e. within 52
+degrees either side of dead astern: 4 to 18 degrees right of the tail (both right legs,
+one behind the other) and 32 to 52 degrees left of it (the two left legs, not merged).
+**The forward half, -90 to +90, is clear**; the nearest occlusion starts 38 degrees behind
+the left beam. The sliced-solid check gives the same bearings with slightly narrower widths
+(the legs are 6 mm square, not 8.5 round): (-174.6, -169.4), (-171.4, -162.6), (128.1,
+135.2), (142.7, 148.0). In the driver, mask the analytic sectors, or drop returns under
+0.10 m (the C1's minimum range is 0.05 m and the legs are at 0.047 to 0.090 m; the
+front-right leg at 46.7 mm is inside the datasheet minimum and will read as noise anyway).
+Everything the legs hide is behind the car within 9 cm of the lidar, which is the car
+itself.
+
+### Camera line of sight over the lidar
+
+Gemini 335 field of view: depth H 90 x V 65 degrees, RGB H 86 x V 55 (orbbec.com product
+page, "Depth FOV H90° V65°", read 2026-09-05; the Gemini 330 series datasheet v1.1 gives
+the same). A rectilinear camera puts a point at image row f * z'/x' (x' the depth along the
+optical axis), so the lateral offset of the lidar (20.5 mm right of the lens) does not
+matter; the lidar enters the bottom of the image when its highest edge, as seen from the
+lens, reaches the bottom ray at -(pitch + 32.5) degrees. The highest edge from the lens
+is the head cylinder's rear top rim, x 73 (axis 95 minus R 22), z 56.3. The lens moves as
+the head pitches about the drum axis (`camera_mast_mount.lens_xyz`), which the table
+includes (`camera_mast_mount.lidar_in_view()`, called by `board_layout.py` with the real
+relative position; the JSON has the same rows):
+
+| head pitch (deg, nose down) | lens (x, z) above the plate | lidar edge from the lens (dx, dz) | lidar edge elevation (deg) | image bottom ray (deg) | lidar below the image bottom (deg) |
+| --- | --- | --- | --- | --- | --- |
+| 0 | (54.0, 148.9) | (19.0, -92.6) | -78.4 | -32.5 | 45.9 |
+| -5 | (57.1, 147.1) | (15.9, -90.8) | -80.1 | -37.5 | 42.6 |
+| -10 | (60.0, 145.0) | (13.0, -88.7) | -81.7 | -42.5 | 39.2 |
+| -15 | (62.8, 142.7) | (10.2, -86.4) | -83.3 | -47.5 | 35.8 |
+| -20 | (65.3, 140.2) | (7.7, -83.9) | -84.8 | -52.5 | 32.3 |
+
+The lidar top would enter the depth image at **-60.6 degrees** of pitch (the RGB image, V
+55, at -65.8), three times the mast's -20 limit; at -20 the lidar is still 32 degrees below
+the bottom of the frame. The lidar is almost directly under the lens (19 mm ahead, 93 mm
+down), which is the point of putting the mast right behind it. So `CAM_HEIGHT` stays at
+150 and nothing is paid in stiffness. (For the record, if it ever had to go up: the legs
+are a pinned truss whose tip deflection goes with length cubed, so +10 mm on the 99 mm legs
+would cost about 30 % more deflection at the head, from 0.2 to 0.26 mm fore-aft at 5 g,
+and about 15 % on the first mode.) What the camera does see at -20 is the plate from
+x 173 forward, i.e. the front body posts (at 180, 25 tall) in the bottom corners of the
+frame, and its own front-left tyre at full bump; neither is on the board.
+
+### Hole table
+
+All 28, with what a free hole can still take (a from-below piece for a mount above, a
+from-above piece for a mount below; "hits" are the intersection volumes in mm3 the piece
+would have with the placed solids, from the same model):
+
+| hole | x | y | used by | free for a mount above | free for a mount below |
+| --- | --- | --- | --- | --- | --- |
+| A1 | 115 | 61.5 | free; the plinth's wall stands on its inboard 4.3 mm | no: a foot's 34 mm flange would meet the plinth wall (the piece itself has no hits) | no: plinth 846 |
+| B1 | 115 | 20.5 | lidar plinth | | |
+| C1 | 115 | -20.5 | free; plinth wall on its inboard 4.3 mm, small-board plate over its outboard 3.25 | no: plinth wall and small-board plate on the hole (the piece itself has no hits) | no: plinth 846, small-board plate 356, hub 750 |
+| D1 | 115 | -61.5 | small-board plate | | |
+| A2 | 75 | 61.5 | free; plinth wall on its inboard 4.3 mm (alternative lidar-lead pass-through, left side) | no: as A1 | no: plinth 846 |
+| B2 | 75 | 20.5 | lidar plinth | | |
+| C2 | 75 | -20.5 | free, **cable pass-through for the lidar lead**: 21 of its 28.5 mm open between the plinth wall (4.3) and the small-board plate's edge (3.25) | no: as C1 | no: plinth 846, small-board plate 523, hub 876 |
+| D2 | 75 | -61.5 | small-board plate | | |
+| A3 | 35 | 61.5 | camera mast | | |
+| B3 | 35 | 20.5 | camera mast | | |
+| C3 | 35 | -20.5 | free, **cable pass-through for the camera lead**: open except a 15 x 3.25 corner under the small-board plate; 9 mm from the mast's right rear leg | no: Jetson tray 1272 (this is what rules out the centred mast) | no: small-board plate 276, hub 259 |
+| D3 | 35 | -61.5 | free, pass-through for the hub and PCA9685 leads (13.5 mm strip open at x 20.75..34.25, the rest under the small-board plate) | no: Jetson tray 541 | no: small-board plate 842, hub 1475 |
+| A4 | -5 | 61.5 | free (under the cradle border) | yes, but the cradle covers it | no: cradle 970, pack 3275 |
+| B4 | -5 | 20.5 | free (under the cradle) | covered | no: cradle 612, pack 3293 |
+| C4 | -5 | -20.5 | free (under the cradle) | no: Jetson tray 2046 | no: cradle 970, pack 3275 |
+| D4 | -5 | -61.5 | Jetson tray | | |
+| A5 | -45 | 61.5 | free (under the cradle) | covered | no: cradle 1823, pack 5692 |
+| B5 | -45 | 20.5 | Omni cradle | | |
+| C5 | -45 | -20.5 | free (under the cradle) | no: Jetson tray 2046 | no: cradle 1823, pack 5692 |
+| D5 | -45 | -61.5 | Jetson tray | | |
+| A6 | -85 | 61.5 | free (under the cradle) | covered | no: cradle 1823, pack 5692 |
+| B6 | -85 | 20.5 | Omni cradle | | |
+| C6 | -85 | -20.5 | free (under the cradle) | no: Jetson tray 1214 | no: cradle 1823, pack 5692 |
+| D6 | -85 | -61.5 | free; the VESC's USB comes up through it | no: Jetson tray 1703 | 25 mm3 against the tidy's pad (the pad ends 0.25 short of the hole edge; a from-above flange reaches 2 mm past it), otherwise nothing under it but the saddle's rear end |
+| A8 | -185 | 61.5 | Lite-On cup | | |
+| B8 | -185 | 20.5 | free (under the cup) | covered | no: cup 2052, brick 5692 |
+| C8 | -185 | -20.5 | Lite-On cup | | |
+| D8 | -185 | -61.5 | free | yes | yes (behind the rear tower, over nothing; a single-foot mount at most, 14 mm from the rear tyre's inner face at full bump) |
+
+Checks that passed: no hole claimed twice, every foot's peg centre within 2.5 mm of its
+hole centre, every claimed hole in the plate model, the plate one solid, every mount part
+one solid, the 8 mm webs.
+
 ### Interference table
 
 Pairwise intersections over all 65 solids (8 mounts as 9 parts, 12 feet, 12 clipless
@@ -657,44 +810,66 @@ pieces, 9 envelopes including the tidy's screws and nuts, 18 chassis keep-outs, 
 | --- | --- | --- | --- |
 | VESC saddle x steering servo (estimate) | 247.5 | 247.5 | 247.5 |
 | plate front corners x front tyres at full lock + bump (each side; the plate outline, section 3) | 0.7 | 32.6 | 70 |
-| VESC case x small-board plate's D1 / D2 pieces (12.85 mm flanges under the plate, bottom at plate -16) | - | 257 / 381 | 2542 / 3897 (saddle) |
+| VESC case x small-board plate's D1 / D2 pieces (12.85 mm flanges under the plate, bottom at plate -16) | - | 257 / 381 (+ 16 saddle x D1) | 2542 / 3897 (saddle) |
+| VESC saddle x lidar plinth's B2 piece (flange y 4..37 over the saddle's inboard tab, which reaches y 8.5) | - | - | 455 |
 | VESC saddle x Jetson tray | - | - | 96.9 |
 | Jetson kit x tub rim (section 16, unchanged) | - | 817.9 | more |
 | plate rear clamp x spur cover model (section 3, unchanged) | - | 1251 | more |
-| everything else: every mount, foot, piece, envelope, the tidy's screws and nuts, the tidy against the rear tyre, the Jetson, the cup and the small-board plate; the saddle against the tub, motor, battery bay, linkage, front tyre, plate underside, Jetson tray and kit | 0 | 0 | 0 |
+| everything else: every mount, foot, piece, envelope; the mast against the plinth, the lidar, the cradle, the small-board plate and the Jetson's pieces; the plinth against the front posts, cutouts, clamp block, tyres, small-board plate and VESC; the tidy against the rear tyre; the saddle against the tub, motor, battery bay, linkage, front tyre, plate underside, Jetson tray and kit | 0 | 0 | 0 |
+
+`PITCH_Y=40 TAG=_p40`: as in section 13, the cradle hits the Jetson's D4 / D5 pieces by
+289 and 145 mm3 and nothing else changes (the mast and plinth rows are the same three).
+`POSTS=both TAG=_posts`: as in section 15, 808 mm3 brick and 110 mm3 cup against the left
+rear post, nothing else.
 
 The saddle is fixed to the tub, so the plate and its mounts come down toward it as
 UNDER_CLEARANCE shrinks (`tub_report()` in the script): plate underside margin 15.2 /
-10.2 / 5.2 mm at 45 / 40 / 35; the D1/D2 flanges are 2.35 mm above the fingers at 45 and
-2.65 into them at 40. As in section 16, the layout is only consistent at 45 (the Jetson
-is 3.17 into the rim at 40), so 45 is the number to confirm first.
+10.2 / 5.2 mm at 45 / 40 / 35; the D1/D2 and B2 flanges are 2.35 mm above the fingers at
+45 and 2.65 into them at 40 (B2 only at 35: its overlap with the saddle tab in plan is a
+4.5 mm strip). As in section 16, the layout is only consistent at 45 (the Jetson is 3.17
+into the rim at 40), so 45 is the number to confirm first.
 
-Closest approaches at 45, in order: VESC case rear face to the Jetson tray's end 0.25 mm
-(x 28.75 vs 28.5; in z the case top at plate -20.7 is 0.4 above the posts' bottom at
--21.1, so the 0.25 is what keeps them apart); saddle outboard edge to the front tyre's
-inner face 0.5 mm (y -105.5 vs -106, the unsteered tyre at full bump; the locked tyre's
-rear edge is 3 mm further away at that corner); plinth bar to mast bar 0.5 (section 16);
-small-board plate to the front tyre 0.75 (section 16); cradle to the Jetson pieces 0.9
-(section 16); saddle fingers to the D1/D2 flanges 2.35; saddle to the linkage 3.75; tidy
-pads to the D6 hole edge 0.25 in plan (the pad ends at y -76, the hole at -75.75; D6 can
-still take a from-below piece, and could not take a from-above one anyway); tidy ledge to
-the rear tyre's inner face 5.75 in y and the rail's rear end 6 mm ahead of where the
-bump sweep would touch it (`rail shifted -8: 18.7 mm3`), 5 to 10 mm of extra bump before
-contact; tidy nuts under the plate to the Jetson tray 26 mm.
+Closest approaches at 45, in order: mast bar to plinth bar 0.25 mm (mast bar's -y stop
+end at x 55.25, plinth bar's open rear end at 55.5, both at floor level, 7 and 10 mm tall;
+both parts float +-2 mm on their pegs plus 1.75 of channel play, so they can touch, which
+costs nothing; `S_STOP + 4.0` in the mast script is the 4 mm stop wall, 3 would give 1.25);
+VESC case rear face to the Jetson tray's end 0.25 (x 28.75 vs 28.5; in z the case top at
+plate -20.7 is 0.4 above the posts' bottom at -21.1, so the 0.25 is what keeps them apart);
+saddle outboard edge to the front tyre's inner face 0.5 (y -105.5 vs -106, the unsteered
+tyre at full bump; the locked tyre's rear edge is 3 mm further away at that corner); cradle
+to the Jetson pieces 0.9 (section 16); saddle fingers to the D1/D2 and B2 flanges 2.35;
+saddle to the linkage 3.75; tidy pads to the D6 hole edge 0.25 in plan; tidy ledge to the
+rear tyre's inner face 5.75 in y and the rail's rear end 6 mm ahead of where the bump
+sweep would touch it, 5 to 10 mm of extra bump before contact; mast legs to the plinth body
+8.7 and to the lidar envelope 9.0; mast bar to the cradle 12.65; small-board plate to the
+front-right tyre sweep 14.4 (solid model); plinth's B1 flange to the linkage model 17.15;
+plinth body to the small-board plate 20.95; mast's B3 flange to the Jetson tray 22.5; mast
+pieces to the battery hold-down model 26; tidy nuts under the plate to the Jetson tray 26;
+plinth to the front-left tyre sweep 41.7, to the front body posts 41.1.
 
-Above-board heights are unchanged (lidar 56.3, scan plane 44.8, cup fingers 34.3); the
-tidy's caps at 23.5 are the tallest thing on the right edge and 21.3 under the scan
-plane. Cables: the tidy is now beside the Jetson's outboard connector edge (the Jetson's
-USB and DC jack face -y at y -100, 13 to 30 mm below the plate, directly under the rail),
-so the camera, lidar and hub leads coming aft along the right edge under the plate turn up
-over the plate edge onto the rail at x -110..-12 and back down to the Jetson; the brick's
-19 V lead comes forward from the cup's notch (x -219.5) along the edge to the rail's rear
-posts. The VESC's USB goes up through D6 (free, over the saddle's rear end) to the hub;
-its phase leads leave outboard at y -105.5 at rim +12 to +18 and run aft at about y -108,
-outboard of the Jetson tray's overhang (which ends at -104.5 and whose connectors bottom
-out at rim +9, so the run cannot pass under it) and below the plate edge, then turn
-inboard ahead of the rear tyre (x > -100) to the motor's terminal end at (-120, -82). The
-XT90 points inboard toward the battery bay.
+Above-board heights: lidar 56.3, scan plane 44.8, cup fingers 34.3, brick 32, pack 31,
+front body posts 25, PCA9685 headers 23.6, tidy caps 23.5, cradle posts 18; mast head
+127..154, camera 136..161, lens 148.9.
+
+Cables. Camera: the Gemini 335's USB-C leaves the head on the -y (right) end 137 mm up,
+comes down the mast's right-hand rear leg (leg base at (17.75, 3)) and drops through hole
+C3 (35, -20.5), which is 9 mm from the leg base and open apart from a 15 x 3.25 mm corner
+under the small-board plate's inboard edge; under the plate the Jetson tray's end (x 28.5)
+is under the hole's rear 7.75 mm and the VESC saddle's case is 15 mm below the plate under
+the rest, so the lead comes down ahead of the tray, onto the case, and runs aft along the
+plate's right edge to the Jetson's USB-A at the tray's outboard edge (x -72..-25, y -100).
+Lidar: the C1's XH lead leaves the plinth's rear notch onto the bar's rear extension at
+(55.5..64, 20.5), crosses about 35 mm aft-right to hole C2 (75, -20.5), of which 21 mm is
+open between the plinth wall and the small-board plate's edge, and goes down to the XH-USB
+adapter zip-tied to the plate underside at the C2/C3 web, in the 15 mm between the plate
+and the saddle's case, then joins the same right-edge run. (A2 on the left is the
+alternative pass-through, 4.3 mm under the plinth wall, with the adapter outboard of the
+tub's left wall; its USB lead would then have to cross the car under the plate between the
+battery bay's front end at x 45 and the saddle's rear at 25, so C2 is the shorter route.)
+Hub and PCA9685 leads down D3 as before (13.5 mm strip open); the VESC's USB up through
+D6; the brick's 19 V lead and the tidy as in the tidy paragraph above and CABLE_TIDY_MOUNT
+.md. No cable slots were cut in the plate (`CABLE_SLOTS` in `baseplate_v2.py` if the real
+cable ends do not bend that way).
 
 PCA9685: once the FSESC drives the steering servo from its PPM/UART header (the servo
 lead then runs 30 mm inside the tub instead of down D3 from the plate), the PCA9685 on the
@@ -704,7 +879,9 @@ D2 and 6.5 mm of the right edge. It is left in place here; nothing else depends 
 
 ### Measure on the car before cutting v2 and printing these two
 
-Everything in sections 11 and 18 still applies. Added:
+Everything in sections 11 and 18 still applies, except that section 18 item 1 (the
+small-board plate's front end vs the tyre) is now 14.4 mm in the solid model, not 0.75,
+and `PLATE_OFFSET=8.5` would move it FORWARD, not aft. Added:
 
 1. Tub right side rail: width across its top (`RAIL_W`, 12 assumed), lip height and
    whether there is a gap under the lip for a strap, depth available for the legs before
@@ -713,10 +890,16 @@ Everything in sections 11 and 18 still applies. Added:
    `ESC_STANDOFF`), and whether the receiver box sits in that bay (it is not in the
    chassis model; the saddle's floor is 6 mm below the rim there).
 3. Steering servo: rear face x and top height relative to the rim (the 2.25 mm above),
-   and the bellcrank's rearmost sweep (the linkage model starts at x 128).
+   and the bellcrank's rearmost sweep and height (the linkage model is x 128..175, 15 mm
+   above the rim; the plinth's B1 flange under the plate reaches x 131.5 and 12.85 mm
+   down, so it is over the linkage model's rear 3.5 mm with 17 mm of air; a bellcrank or
+   servo saver that stands more than 32 mm above the rim would touch it).
 4. Rear tyre at full bump at x -112 to -100, y -106: the tidy's rear end and ledge are
    5.75 to 6 mm from the swept tyre in the model.
 5. Zip holes (-105, -82) and (-145, -82): confirm nothing on the car is under them (the
    model has nothing; the nuts reach 8.2 mm below the plate top).
 6. Front right tyre inner face at full bump, unsteered, at x 120..125: the saddle's
    outboard tab is at y -117.5 and its body at -105.5.
+7. Lidar view: with the car on its wheels, spin the C1 and confirm the only returns under
+   0.10 m are in the three rear sectors above (the front-left tyre at full bump tops out
+   at +15.8 above the plate, 29 mm under the scan plane, and the front body posts at 25).
