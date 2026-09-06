@@ -25,6 +25,15 @@ Verification that must run and be reported, in CadQuery, before a part is called
 - zero intersection volume between: part and feet, feet and clipless pieces, part and
   plate stub, part and the component envelope (place the envelope where it really sits)
 - print orientation is support-free, or say exactly where supports go
+- every foot can actually be installed: zero material in the column above a flange recess
+  (recess mounts), or a clear slide path to the open end of the channel apart from the
+  snap-tongue bumps (channel mounts). `python3 audit_feet.py` runs this over the set;
+  a part passes the interference checks and still fails this one when a wall or a boss
+  bridges the slot. Two printed parts did.
+- the exported STL has its feet at the pitch of the plate it is for. The model being
+  rebuilt at the right pitch inside `board_layout.py` does not update `out/`; the part's
+  own script has to be run with `OUT_SUFFIX=_v2`. `audit_feet.py` measures the holes in
+  the STL files too.
 - mass estimate from volume
 
 Design rules: 3 mm minimum wall, 0.5 mm envelope clearance for snap-free drop-in, 0.25 mm

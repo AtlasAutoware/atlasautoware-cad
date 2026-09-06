@@ -21,7 +21,8 @@ cradle. Geometry assumed between cup and cradle is in assumed_geometry().
 import os, sys
 import cadquery as cq
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from clipless import foot, foot_cutout, clipless_piece, plate_stub, RIM_PROUD, RIM_TOP, FOOT_FLANGE, FOOT_CLR
+from clipless import (foot, foot_cutout, clipless_piece, plate_stub, RIM_PROUD, RIM_TOP,
+                      FOOT_FLANGE, FOOT_FLANGE_T, FOOT_CLR)
 from render import render
 from jetson_orin_nano_mount import lines_png, box, inter
 
@@ -146,7 +147,21 @@ def cup():
         return c
     for (x, y) in FEET:
         c = c.cut(foot_cutout(FLOOR, 'y').translate((x, y, 0)))
+        # The foot drops in from above, so nothing may stand over its flange recess. The
+        # recess reaches y 26..56 for a foot at y 41 and the 3 mm side wall runs y
+        # 29.5..32.5, so the wall bridges straight over the slot and the foot cannot be
+        # installed. foot_cutout only reaches FLOOR+1. Open the wall over the footprint.
+        c = c.cut(foot_access(FLOOR).translate((x, y, 0)))
     return c
+
+
+def foot_access(floor_t):
+    """Clear column above one foot's flange recess, from the recess floor to well above
+    the part. Subtracting this guarantees the foot can be dropped in and pulled out."""
+    fx, fy = FOOT_FLANGE[::-1]      # foot('y'): 34 along x, 30 along y
+    return (cq.Workplane('XY').workplane(offset=floor_t - FOOT_FLANGE_T)
+            .rect(fx + 2 * FOOT_CLR, fy + 2 * FOOT_CLR).extrude(200)
+            .edges('|Z').fillet(2 + FOOT_CLR))
 
 
 def feet():
@@ -167,6 +182,21 @@ def envelope():
                         sy * PRONG_PITCH / 2 + 0.8, zc - 3.2, zc + 3.2))
     e = e.union(cq.Workplane('YZ', origin=(BRICK_L / 2 - 0.01, 0, zc)).circle(CABLE_D / 2).extrude(30))
     return e
+
+
+def extraction(c):
+    """Total material standing over the feet's flange recesses. Anything above zero means
+    a foot cannot be dropped into that slot, whatever the interference checks say: the
+    part is still one solid and still misses the foot, it just has a roof over it."""
+    fx, fy = FOOT_FLANGE[::-1]
+    total = 0.0
+    for (x, y) in FEET:
+        # From the flange's top face upward only: the 2 mm ledge the flange lands on is
+        # below that and is meant to be there.
+        sweep = (cq.Workplane('XY').workplane(offset=FLOOR).rect(fx, fy).extrude(200)
+                 .translate((x, y, 0)))
+        total += c.val().intersect(sweep.val()).Volume()
+    return round(total, 2)
 
 
 def assumed_geometry():
@@ -243,6 +273,7 @@ def checks(c):
         'cup_x_plate': inter(c, stub),
         'cup_x_envelope': inter(c, env),
         'feet_x_envelope': sum(inter(f, env) for f in fs),
+        'material_over_foot_slots': extraction(c),
         'floor': FLOOR,
         'lip_underside_z': Z_LIP,
         'brick_top_z': Z_BRICK + BRICK_H,

@@ -90,7 +90,12 @@ if not os.environ.get('SKIP_REGEN'):
                  ('rplidar_c1_mount.py', {'OUT_SUFFIX': '_v2'}),
                  ('camera_mast_mount.py', {'OUT_SUFFIX': '_v2', 'LIDAR_X': '60', 'LIDAR_Y': '-20.5'}),   # feet at PITCH_Y 41, lidar one column ahead
                  ('small_board_plate_mount.py', {'RETAIN': 'recess', 'OUT_SUFFIX': '_v2'}),
-                 ('liteon_45w_brick_mount.py', {'RETAIN': 'recess', 'PITCH_Y': str(2 * PITCH_Y), 'FEET_X_OFFSET': '13.5', 'OUT_SUFFIX': '_v2'})]
+                 ('liteon_45w_brick_mount.py', {'RETAIN': 'recess', 'PITCH_Y': str(2 * PITCH_Y), 'FEET_X_OFFSET': '13.5', 'OUT_SUFFIX': '_v2'}),
+                 # these three were missing from the list, so out/omni20_cradle.stl was the
+                 # 49 mm pitch part and went to the printer for a 40 mm plate
+                 ('omni20_mount.py', {'OUT_SUFFIX': '_v2'}),
+                 ('vesc_fsesc67_mount.py', {'RETAIN': 'recess', 'OUT_SUFFIX': '_v2'}),
+                 ('lipo_smc_9000_mount.py', {'OUT_SUFFIX': '_v2'})]
         # (FEET_X_OFFSET 13.5 = column 8 behind the brick centre; asserted against the computed value below)
     for script, env in regen:
         e = dict(os.environ); e.update(env)

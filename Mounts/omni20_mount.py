@@ -89,13 +89,14 @@ def assembly(c):
 if __name__ == '__main__':
     c = cradle()
     bb = c.val().BoundingBox()
-    cq.exporters.export(c, os.path.join(OUT, 'omni20_cradle.step'))
-    cq.exporters.export(c, os.path.join(OUT, 'omni20_cradle.stl'), tolerance=0.02, angularTolerance=0.1)
+    N = 'omni20_cradle' + os.environ.get('OUT_SUFFIX', '')
+    cq.exporters.export(c, os.path.join(OUT, N + '.step'))
+    cq.exporters.export(c, os.path.join(OUT, N + '.stl'), tolerance=0.02, angularTolerance=0.1)
     f = foot('x')
     cq.exporters.export(f, os.path.join(OUT, 'clipless_foot.step'))
     cq.exporters.export(f, os.path.join(OUT, 'clipless_foot.stl'), tolerance=0.02, angularTolerance=0.1)
     a = assembly(c)
-    a.save(os.path.join(OUT, 'omni20_assembly.step'))
+    a.save(os.path.join(OUT, N.replace('cradle', 'assembly') + '.step'))
     vol = c.val().Volume()
     print(f'cradle {bb.xlen:.1f} x {bb.ylen:.1f} x {bb.zlen:.1f} mm, {vol/1000:.1f} cm3 '
           f'(~{vol/1000*1.24*0.6:.0f} g PLA at 60% effective), peg pitch {PEG_PITCH} mm')

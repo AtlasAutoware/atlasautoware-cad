@@ -84,3 +84,17 @@ layers, 3 walls, 30 % infill. Heat-set the four M2.5 inserts before mounting any
 a 4 mm rim): plate centre relative to the foot pair. v2 uses 10.75 with the plate turned
 180 on holes D1+D2 (`out/small_board_plate_v2.*`, recess variant, two feet); the PCA9685
 bosses and strap slots are unchanged relative to the feet, the 5 mm grid follows the plate.
+
+## PCA9685 boss over the foot recess at 40 mm pitch (September 2026)
+
+At 49 mm pitch the strip of solid floor between the two foot recesses is 14.5 mm wide and
+the -x PCA9685 boss column (9.5 mm OD at x -3.30) fits in it with 1.2 mm to spare. On
+Baseplate v2 the pitch is 40 and the strip is 5.5 mm; the same boss then overhangs the -x
+recess by 3.3 mm and the foot cannot drop in. `audit_feet.py` measured 98 mm3 of boss
+standing over that slot on the sliced v2 file.
+
+Now when the strip is narrower than the boss (`_NARROW`), the boss column moves to x 0,
+exactly between the recesses (`PCA_X` 27.94 instead of 24.64), which puts the far column
+at 55.88 and needs `PLATE_OFFSET` 10.75 rather than 8.5 to keep it on the plate. Both are
+env vars. `checks()` reports `material_over_foot_slots`. The layout was re-run with the
+2.25 mm shift: still the same three documented contacts, nothing new.

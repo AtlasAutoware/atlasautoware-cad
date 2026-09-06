@@ -138,3 +138,19 @@ layout), 1 mm clear of it; `FINGER_X` as an env var overrides. `board_layout.py`
 mount part that is not one solid. For v2 the cup is built with `PITCH_Y=82` (feet on rows A
 and C of column 8, bar 40 x 118.5) and `OUT_SUFFIX=_v2` (`out/liteon_45w_brick_v2.*`);
 `OUT_SUFFIX` is accepted by every mount script in the set.
+
+## Wall over the foot slot (found on the printed part, September 2026)
+
+The first v2 print could not take its feet. The flange recess for a foot at y 41 spans
+y 26 to 56 and the 3 mm side wall runs along y 29.5 to 32.5, 14 mm tall, so the wall
+bridged straight over the middle of the slot. `foot_cutout` only cuts to FLOOR + 1 and
+nothing checked what stood above that. The part was one solid and every interference
+number was zero, which is why it got through: the checks asked whether the foot fits in
+its slot, not whether it can get there.
+
+`cup()` now subtracts `foot_access()` for each foot, a clear column over the flange
+footprint from the recess floor upward, which opens a 34.5 mm window in each side wall
+centred on the foot bar. The fingers at x -21 and the cable-end wall are untouched and
+still locate the brick. `checks()` reports `material_over_foot_slots`, which was 2652 mm3
+on the old geometry and must be 0. The same test runs over the whole set in
+`audit_feet.py`.

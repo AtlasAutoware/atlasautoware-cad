@@ -162,16 +162,17 @@ def checks(f):
 if __name__ == '__main__':
     f = frame()
     bb = f.val().BoundingBox()
-    cq.exporters.export(f, os.path.join(OUT, 'lipo_smc_9000.step'))
-    cq.exporters.export(f, os.path.join(OUT, 'lipo_smc_9000.stl'), tolerance=0.02, angularTolerance=0.1)
-    assembly(f).save(os.path.join(OUT, 'lipo_smc_9000_assembly.step'))
+    N = 'lipo_smc_9000' + os.environ.get('OUT_SUFFIX', '')
+    cq.exporters.export(f, os.path.join(OUT, N + '.step'))
+    cq.exporters.export(f, os.path.join(OUT, N + '.stl'), tolerance=0.02, angularTolerance=0.1)
+    assembly(f).save(os.path.join(OUT, N + '_assembly.step'))
     vol = f.val().Volume()
     print(f'frame {bb.xlen:.1f} x {bb.ylen:.1f} x {bb.zlen:.1f} mm, {vol/1000:.1f} cm3 '
           f'({vol/1000*1.24:.0f} g PLA solid, ~{vol/1000*1.24*0.6:.0f} g at 60% effective), '
           f'pack {LIPO_L} x {LIPO_W} x {LIPO_H}, feet on {PEG_PITCH} x {PITCH_Y} mm')
     for k, v in checks(f).items():
         print(f'  {k}: {v}')
-    render([(f, (0.9, 0.45, 0.1))], os.path.join(OUT, 'lipo_smc_9000.png'),
+    render([(f, (0.9, 0.45, 0.1))], os.path.join(OUT, N + '.png'),
            views=[(28, -55), (28, 125)], title='SMC 9000 mAh 4S retention frame')
     fs = feet()
     pieces = _pieces(-(RIM_TOP - RIM_PROUD))
@@ -180,9 +181,9 @@ if __name__ == '__main__':
     shaded = [(stub, (0.55, 0.55, 0.6))] + [(p, (0.63, 0.63, 0.63)) for p in pieces] + \
              [(up(f), (0.9, 0.45, 0.1))] + [(up(ft), (0.2, 0.5, 0.9)) for ft in fs] + \
              [(up(envelope()), (0.35, 0.35, 0.35))]
-    render(shaded, os.path.join(OUT, 'lipo_smc_9000_assembly.png'),
+    render(shaded, os.path.join(OUT, N + '_assembly.png'),
            views=[(28, -55), (28, 125)], title='SMC 9000 frame on clipless (grey = pack envelope)')
     lines_png([stub] + pieces + [up(f)] + [up(ft) for ft in fs] + [up(envelope())],
-              os.path.join(OUT, 'lipo_smc_9000_assembly_lines.svg'),
-              os.path.join(OUT, 'lipo_smc_9000_assembly_lines.png'))
-    lines_png([f], os.path.join(OUT, 'lipo_smc_9000_lines.svg'), os.path.join(OUT, 'lipo_smc_9000_lines.png'))
+              os.path.join(OUT, N + '_assembly_lines.svg'),
+              os.path.join(OUT, N + '_assembly_lines.png'))
+    lines_png([f], os.path.join(OUT, N + '_lines.svg'), os.path.join(OUT, N + '_lines.png'))

@@ -39,8 +39,16 @@ BOSS_OD, BOSS_H = 9.5, 6.0          # 3.5 hole + 3 mm wall, 6 mm standoff
 INSERT_D, INSERT_DEPTH = 3.5, 5.0
 STRAP_W, STRAP_T = 26.0, 4.5
 PEG_PITCH = float(os.environ.get('PEG_PITCH', 49.0))
-PLATE_OFFSET = float(os.environ.get('PLATE_OFFSET', 8.5))   # plate centre relative to the foot-pair centre, +x
+# The solid strip between the two foot recesses is PEG_PITCH - 34.5 wide (14.5 at 49,
+# 5.5 at 40). One PCA9685 boss column (9.5 OD) has to stand in it without overhanging a
+# recess, or the foot cannot drop in. At 49 the column sits at x -3.30 (PCA_X 24.64); at
+# 40 the strip is narrower than the boss, so the column goes to x 0 exactly between the
+# recesses (PCA_X 27.94), which pushes the far column to 55.88 and the plate to
+# PLATE_OFFSET 10.75 to keep it on the plate.
+_NARROW = PEG_PITCH - (FOOT_FLANGE[0] + 2 * FOOT_CLR) < 9.5 + 2.0
+PLATE_OFFSET = float(os.environ.get('PLATE_OFFSET', 10.75 if _NARROW else 8.5))   # plate centre relative to the foot-pair centre, +x
                                     # (8.5 .. 10.75 keeps a 4 mm rim past the foot recesses at 40 mm pitch)
+PCA_X = float(os.environ.get('PCA_X', PCA_HOLES_DX / 2 if _NARROW else 24.64))
 
 # RETAIN='snap': under-board variant (snap_retain.py). The floor thickens to SNAP_FLOOR
 # and the two flange recesses become the dovetail slide channel + snap tongues of
@@ -58,7 +66,7 @@ if RETAIN == 'snap':
 # centre strip |x| < 9.25, the +x end x > 39.75, and the two bands |y| > 17.25. The
 # PCA9685 boss columns are 55.88 apart, so one goes in the centre strip and one at the
 # +x end; the hub strap slots go in the two bands.
-PCA_C = (24.64, 15.1)               # PCA9685 centre; boss columns at x -3.30 and 52.58
+PCA_C = (PCA_X, 15.1)               # PCA9685 centre; boss columns at PCA_X -+ 27.94
 HUB_C = (PLATE_OFFSET, -14.5)       # hub centre, along the -y half of the plate
 SLOT_X = -25.0                      # strap slots at y -24.75 (outside the hub) and +21.5
                                     # (the strap runs over the plate past the hub's +y edge)
@@ -192,8 +200,15 @@ def checks(p, pts):
         }
     stub = plate_stub(FEET, size=(PX + 30, PY + 30)).translate((PLATE_OFFSET, 0, -RIM_PROUD))
     pieces = [clipless_piece().translate((x, y, -RIM_TOP)) for (x, y) in FEET]
+    # nothing may stand over a flange recess, or the foot cannot be dropped in
+    over = 0.0
+    for (x, y) in FEET:
+        col = (cq.Workplane('XY').workplane(offset=FLOOR).rect(FOOT_FLANGE[0], FOOT_FLANGE[1])
+               .extrude(100).translate((x, y, 0)))
+        over += inter(p, col)
     return {
         'solids': len(p.val().Solids()),
+        'material_over_foot_slots': over,
         'plate_x_feet': sum(inter(p, f) for f in fs),
         'feet_x_clipless': sum(inter(f, q) for f in fs for q in pieces),
         'plate_x_plate_stub': inter(p, stub),

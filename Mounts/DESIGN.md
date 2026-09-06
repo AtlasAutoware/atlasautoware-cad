@@ -141,6 +141,15 @@ Worth keeping a list, because the useful part of a design log is the mistakes.
 - The plate is 3.175 mm, not the 2 mm the templates assumed.
 - Section 18 of `LAYOUT.md` claimed `PLATE_OFFSET=8.5` moved the small-board plate aft. It
   moves it forward.
+- The Lite-On cup printed fine and could not take its feet: the side wall bridged the
+  flange recess. Every check passed because none of them asked whether the foot could
+  reach the slot. `audit_feet.py` now sweeps each foot out along every axis and measures
+  what it hits; the small-board plate failed it too, a PCA9685 boss 3.3 mm over a recess
+  at the 40 mm pitch.
+- `board_layout.py` rebuilt the Omni cradle at 40 mm pitch in memory and proved the layout
+  with it, but never wrote it out. `out/omni20_cradle.stl` stayed the 49 mm part and that
+  is what was sliced and printed. The same for the VESC tray and LiPo frame. The regen
+  list now includes them and the audit reads the hole pitch back out of every STL.
 
 ## Still unmeasured
 

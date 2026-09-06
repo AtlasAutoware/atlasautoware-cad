@@ -5,15 +5,23 @@ the printer's SD card in `model/` as `P1S_<part>_PLA.gcode` (plain G-code, same 
 already on the card; nothing on the card was removed). Times are Orca's `total estimated time`
 (includes the P1S start sequence, about 6 min); grams are Orca's `filament used [g]` at 1.24 g/cm3.
 
+2026-09-06: `audit_feet.py` found two printed parts that could not take their feet (Lite-On cup,
+small-board plate) and three files sliced at the wrong pitch for Baseplate v2 (Omni cradle, VESC
+tray, LiPo frame). The five replacements are in `Mounts/` on the printer, sent over FTPS:
+`P1S_LiteOn_45W_Brick_v2_PLA`, `P1S_Small_Board_Plate_v2_PLA`, `P1S_Omni20_Cradle_v2_PLA`,
+`P1S_VESC_FSESC67_Tray_v2_PLA`, `P1S_LiPo_SMC_9000_Frame_v2_PLA`. For the old car on v2, print
+the `_v2` Omni cradle, not `P1S_Omni20_Cradle_PLA`.
+
 | G-code on card | source STL | orientation as sliced | supports / brim | time | PLA |
 | --- | --- | --- | --- | --- | --- |
 | `P1S_Clipless_Foot_PLA.gcode` (one foot) | `out/clipless_foot.stl` | flange down, peg up (rotated 180 about X: the STL is modelled flange-up) | none | 19 min | 5.8 g |
 | `P1S_Plate_12xFoot_CamHead_PLA.gcode` | 12 x `out/clipless_foot.stl` + `out/camera_mast_head.stl` | feet flange down; head on its rear tab back face | none | 2 h 23 min | 79.5 g |
 | `P1S_Camera_Mast_Head_PLA.gcode` (one head) | `out/camera_mast_head.stl` | on the rear tab's back face (rotated -90 about Y so the -X face is on the bed); pad vertical, teeth as vertical serrations | none | 35 min | 10.8 g |
-| `P1S_Omni20_Cradle_PLA.gcode` | `out/omni20_cradle.stl` | floor down, as modelled | none | 1 h 28 min | 53.3 g |
-| `P1S_LiteOn_45W_Brick_v2_PLA.gcode` | `out/liteon_45w_brick_v2.stl` | floor down, as modelled | none | 1 h 03 min | 29.3 g |
+| `P1S_Omni20_Cradle_PLA.gcode` (STL plate, pitch 49; WRONG for v2) | `out/omni20_cradle.stl` | floor down, as modelled | none | 1 h 28 min | 53.3 g |
+| `P1S_Omni20_Cradle_v2_PLA.gcode` (Baseplate v2, pitch 40) | `out/omni20_cradle_v2.stl` | floor down, as modelled | none | 1 h 27 min | 50.8 g |
+| `P1S_LiteOn_45W_Brick_v2_PLA.gcode` (re-sliced 2026-09-06: walls opened over the foot slots) | `out/liteon_45w_brick_v2.stl` | floor down, as modelled | none | 1 h 00 min | 26.2 g |
 | `P1S_Jetson_Orin_Nano_Under_PLA.gcode` | `out/jetson_orin_nano_under.stl` | floor down, as modelled | none | 1 h 20 min | 45.0 g |
-| `P1S_Small_Board_Plate_v2_PLA.gcode` | `out/small_board_plate_v2.stl` | flat, bosses up, as modelled | none | 1 h 05 min | 18.4 g |
+| `P1S_Small_Board_Plate_v2_PLA.gcode` (re-sliced 2026-09-06: PCA boss moved off the foot recess) | `out/small_board_plate_v2.stl` | flat, bosses up, as modelled | none | 1 h 06 min | 18.4 g |
 | `P1S_RPLidar_C1_PLA.gcode` (STL plate, pitch 49) | `out/rplidar_c1.stl` | open underside down, as modelled | none | 1 h 03 min | 33.0 g |
 | `P1S_RPLidar_C1_v2_PLA.gcode` (Baseplate v2, pitch 40) | `out/rplidar_c1_v2.stl` | open underside down, as modelled | none | 1 h 04 min | 33.9 g |
 | `P1S_Camera_Mast_PLA.gcode` (STL plate, pitch 47) | `out/camera_mast.stl` | standing, feet down, as modelled (132 mm tall) | 5 mm outer brim | 2 h 07 min | 38.5 g |
@@ -21,8 +29,10 @@ already on the card; nothing on the card was removed). Times are Orca's `total e
 | `P1S_Camera_Mast_Newcar_PLA.gcode` (new car, CAM_HEIGHT 170) | `newcar/out/camera_mast_newcar.stl` | standing, feet down, as modelled (152 mm tall) | 5 mm outer brim | 2 h 22 min | 41.2 g |
 | `P1S_Cable_Tidy_Edge_PLA.gcode` | `out/cable_tidy_edge.stl` | floor down, as modelled | none | 56 min | 27.1 g |
 | `P1S_VESC_Tub_Bracket_PLA.gcode` | `out/vesc_tub_bracket.stl` | legs down, as modelled (STL translated up 12 mm so the leg bottoms are the first layer) | tree(auto) supports, build plate only, 30 deg threshold | 4 h 05 min | 75.1 g |
-| `P1S_VESC_FSESC67_Tray_PLA.gcode` (alternative) | `out/vesc_fsesc67.stl` | floor down, as modelled | none | 1 h 29 min | 36.9 g |
-| `P1S_LiPo_SMC_9000_Frame_PLA.gcode` (alternative to the Omni) | `out/lipo_smc_9000.stl` | floor down, as modelled | none | 1 h 21 min | 44.4 g |
+| `P1S_VESC_FSESC67_Tray_PLA.gcode` (alternative; pitch 49, STL plate only) | `out/vesc_fsesc67.stl` | floor down, as modelled | none | 1 h 29 min | 36.9 g |
+| `P1S_VESC_FSESC67_Tray_v2_PLA.gcode` (alternative, pitch 40) | `out/vesc_fsesc67_v2.stl` | floor down, as modelled | none | 1 h 31 min | 37.5 g |
+| `P1S_LiPo_SMC_9000_Frame_PLA.gcode` (alternative to the Omni; 49 x 47, STL plate only) | `out/lipo_smc_9000.stl` | floor down, as modelled | none | 1 h 21 min | 44.4 g |
+| `P1S_LiPo_SMC_9000_Frame_v2_PLA.gcode` (alternative, 40 x 41) | `out/lipo_smc_9000_v2.stl` | floor down, as modelled | none | 1 h 19 min | 42.9 g |
 | `P1S_TiM561_Plinth_PLA.gcode` | `newcar/out/tim561.stl` | upright, floor down, as modelled | none | 1 h 39 min | 46.2 g |
 | `P1S_Battery_Bank_Underslung_PLA.gcode` | `newcar/out/battery_bank_underslung.stl` | upright, floor down, fingers up, as modelled | none | 2 h 17 min | 80.6 g |
 
