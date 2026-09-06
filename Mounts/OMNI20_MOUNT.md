@@ -8,11 +8,11 @@ pack), and PNG renders. Source: `omni20_mount.py`, which imports the measured sy
 ## How the clipless system actually works (measured from the Templates)
 
 The Baseplate is a 2 mm plate with 28.5 x 28.5 mm square holes. The Clipless Mounting Piece
-is a 33 x 33 mm cup that goes in from **below** the plate: its 28 x 28 rim passes up through
+is a 33 x 33 mm cup that goes in from below the plate: its 28 x 28 rim passes up through
 the hole (0.25 mm a side), the 33 x 33 flange stops against the plate's underside, and its
 24 x 24 mm pocket, 14 mm deep, opens upward through the plate. The clip version is the same
 part with two snap arms living in the 8 mm rim gaps. So anything mounted on the car carries
-**24 x 24 pegs** that drop into those pockets, and rests on the rim tops, 1.13 mm above the
+24 x 24 pegs that drop into those pockets, and rests on the rim tops, 1.13 mm above the
 plate.
 
 The hole pitch on the Baseplate is not regular: 47.9, 49.0, 53.1 and 50.0 mm between
@@ -27,7 +27,7 @@ different pair.
 The peg is not grown on the cradle. A one-piece tray has the peg on one face and the
 component on the other, so it cannot be printed without supporting one of them. Instead
 the cradle floor has a through-hole with a 2 mm flange recess on top, and a separate
-**foot** (20 x 23.8 x 12 mm peg under a 30 x 34 x 2 mm flange, 0.25 mm clearance) drops
+foot (20 x 23.8 x 12 mm peg under a 30 x 34 x 2 mm flange, 0.25 mm clearance) drops
 in from above. The pack sits on the flange and traps it; sideways loads go from the pack
 into the posts, through the floor into the peg. Both parts print flat with no supports.
 The same foot and the same cutout (`foot()` and `foot_cutout()` in `clipless.py`) are the

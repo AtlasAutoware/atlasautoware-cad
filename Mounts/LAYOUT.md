@@ -7,9 +7,9 @@
 `out/board_layout_report.json` (hole table, claims, interference rows, clearances, chassis
 parameters). `UNDER_CLEARANCE=40 python3 board_layout.py` re-runs at another clearance;
 `ATTEMPT=jetson|vesc|tidy` places one of the mounts that do not fit and prints why
-(section 7); `SKIP_REGEN=1` skips the mount-script regeneration. **Baseplate v2**, the
+(section 7); `SKIP_REGEN=1` skips the mount-script regeneration. Baseplate v2, the
 laser-cut replacement plate with the 40 x 41 grid, is sections 12-18
-(`PLATE=v2 python3 board_layout.py`); **section 19 is the final set on v2**, with the cable
+(`PLATE=v2 python3 board_layout.py`); section 19 is the final set on v2, with the cable
 tidy on the plate edge and the VESC on a tub saddle, neither on clipless feet, and with the
 lidar moved to the front (B1+B2) and the camera mast behind it (A3+B3) so the lidar's
 forward half is unobstructed; section 19 also has the lidar's occluded sectors and the
@@ -35,14 +35,14 @@ numbers (section 7). What would change the answer is in section 9.
 ## 1. The real Baseplate (templates/Baseplate.stl)
 
 Read with trimesh (`read_baseplate()` in `board_layout.py`): the STL is not watertight and
-contains ten bodies. The plate body is 452.0 x 177.5 x **3.175 mm** (1/8 in stock, not the
+contains ten bodies. The plate body is 452.0 x 177.5 x 3.175 mm (1/8 in stock, not the
 2 mm in `clipless.py`; the task said to treat it as 2 mm, so `PLATE_T` defaults to 2.0 and
 is an env var. With 3.175 the clipless rim ends 0.045 mm below the plate top and mounts rest
 on the plate instead of on the rim tops; nothing in the layout changes except that every
 above-board z drops by 1.13 mm). The section at mid-thickness gives, in STL coordinates:
 
 - outline 0..452 x 0..177.5, centre (226, 88.75);
-- **15 square holes, 28.5 x 28.5, on an exactly regular 50.0 x 47.5 grid**: x = 114.25,
+- 15 square holes, 28.5 x 28.5, on an exactly regular 50.0 x 47.5 grid: x = 114.25,
   164.25, 214.25, 264.25, 314.25; y = 40.75, 88.25, 135.75. The "irregular 47.9 to 53.1 mm
   pitch" in CONVENTIONS.md and clipless.py is not in this STL; the grid centre is 11.75 mm
   off the plate centre along the plate and 0.5 mm across;
@@ -66,7 +66,7 @@ plate is tied to the chassis at the two shock towers: tower planes at the clamp 
 board x = +168.3 and -153.1, body posts at the cutout centres.
 
 Board frame: +x forward, +y left, +z up, origin at the plate centre, plate top at z = 0.
-**Front = the STL x = 0 end** (`FRONT_END=xmin`, so board x = 226 - x_stl, board y =
+Front = the STL x = 0 end (`FRONT_END=xmin`, so board x = 226 - x_stl, board y =
 88.75 - y_stl). Reasons: the cutout pair at that end is the narrower one (77.25 vs 82.25 mm)
 and on the Slash 2WD the front body posts (on the front shock tower) sit closer together
 than the rear posts on the rear body mount; the hole grid is shifted 11.75 mm toward that
@@ -149,9 +149,9 @@ New holes: this layout needs four more 28.5 mm holes cut in the plate (`EXTRA_HO
 default). They are placed so their clipless flanges (33 mm) miss the plate clamps and
 the body posts:
 
-- **n1C (143.0, +0.5) and n1L (143.0, +48.0)**: the camera mast pair, 31.25 mm ahead of c1.
+- n1C (143.0, +0.5) and n1L (143.0, +48.0): the camera mast pair, 31.25 mm ahead of c1.
   Their flanges end at x 159.5, 1 mm short of the front clamp (160.5).
-- **n6L (-180.0, +24.25) and n6R (-180.0, -23.25)**: the Lite-On cup pair behind the
+- n6L (-180.0, +24.25) and n6R (-180.0, -23.25): the Lite-On cup pair behind the
   cradle, straddling the C row at the cup's 47.5 mm foot pitch. Flanges end at x -163.5,
   2.6 mm short of the rear clamp (-160.9); 17 mm clear of the body posts.
 
@@ -209,8 +209,8 @@ except the ones that nest by design inside one mount (part/feet/pocket/envelope)
 brick's prongs inside the pack's outlet (317 mm3 of plug engagement, listed separately),
 chassis vs chassis, and the clamps against the towers they clamp.
 
-Final layout, UNDER_CLEARANCE 45: **zero interference between any mount, foot, piece,
-envelope and the chassis or board.** The only non-zero rows are the chassis-vs-plate ones
+Final layout, UNDER_CLEARANCE 45: zero interference between any mount, foot, piece,
+envelope and the chassis or board. The only non-zero rows are the chassis-vs-plate ones
 from section 3 (front tyres at full lock + full bump vs the plate's front corners,
 0.7 mm3 each side).
 
@@ -366,7 +366,7 @@ Also cut: 22 zip-tie holes, 6 mm, at y = +-82 every 40 mm (x = -205, -145, -105 
 3.75 mm to the edge, 3.6 mm to the nearest clipless-hole corner, the check threshold for
 these unloaded holes is 3.5) for strapping cable runs along both long edges; four M3 holes
 (3.2 mm) at (155, +-82) and (-125, +-82) for optional under-board rails along the long
-edges (280 mm between them; note the Jetson tray overhangs the right edge, section 15, so a
+edges (280 mm between them; the Jetson tray overhangs the right edge, section 15, so a
 right-hand rail is not compatible with this layout). The 8 mm web rule for the clipless
 holes is asserted in `check_webs()` (to the outline, the cutouts, the clamp holes and each
 other). No cable slots were needed (section 16); `CABLE_SLOTS` in `baseplate_v2.py` takes
@@ -480,8 +480,8 @@ cup had the same fault and the same fix, its numbers do not change), the 8 mm we
 
 Pairwise intersection over all 60 solids (6 mounts as 7 parts, 12 feet, 12 clipless
 pieces, 6 envelopes, 17 chassis keep-outs, plate and 4 clamp blocks), same exclusions as
-section 7: at UNDER_CLEARANCE 45, **zero interference between any mount, foot, piece,
-envelope, the chassis and the plate**; the only non-zero rows are the plate's own front
+section 7: at UNDER_CLEARANCE 45, zero interference between any mount, foot, piece,
+envelope, the chassis and the plate; the only non-zero rows are the plate's own front
 corners against the front tyres at full lock plus full bump (0.7 mm3 each side, the plate
 outline's problem, section 3). Closest approaches, in order:
 
@@ -585,7 +585,7 @@ position, brick size, clamp height):
 
 1. Front tyre inner face at full lock with the suspension bottomed, at x 134 (the
    small-board plate's front end) and y -91.5: the plan-view figure here was 0.75 mm; the
-   solid model's closest approach is 14.4 mm (section 19). Note that with the plate turned
+   solid model's closest approach is 14.4 mm (section 19). With the plate turned
    180, `PLATE_OFFSET=8.5` moves it 2.25 mm FORWARD (10.75 is the most aft the rim rule
    allows); the other way out if the tyre is closer than modelled is a shorter plate
    (the PCA9685 note in section 19).
@@ -625,16 +625,16 @@ the section 17 attempts and predate this section.
 Sections 15-16 had the camera mast on A1+B1 (x 115) IN FRONT of the RPLIDAR C1 on A2+A3
 (x 55): the mast's four legs crossed the lidar's scan plane (44.8 above the plate) in the
 forward-right quadrant, 5 to 30 degrees off dead ahead, which is the sector a racing car
-needs most. Fixed by swapping them: the plinth goes to the front on **B1+B2** (feet along
+needs most. Fixed by swapping them: the plinth goes to the front on B1+B2 (feet along
 x at 115 and 75, centre (95, 20.5), connector notch aft) and the mast behind it on
-**A3+B3** (feet across on rows A and B at column 3, centre (35, 41)), head looking forward
+A3+B3 (feet across on rows A and B at column 3, centre (35, 41)), head looking forward
 over the lidar. Nothing on the board now crosses the scan plane in the forward half; the
 only things that cross it anywhere are the mast legs, in the rear half (sectors below).
 
 Why A3+B3 and not the centred pairs the owner asked for first (`ATTEMPT=mastB3C3` /
 `mastB4C4` reproduce them, outputs `out/board_layout_v2_mastB3C3_*`, `_mastB4C4_*`):
 
-- **B3+C3** (centre (35, 0)): an above-board mount uses clipless pieces from BELOW, and the
+- B3+C3 (centre (35, 0)): an above-board mount uses clipless pieces from BELOW, and the
   C3 piece's 33 x 33 x 12.85 flange under the plate (x 18.5..51.5, y -37..-4) is where the
   Jetson tray's front-inboard corner hangs (tray x -78.5..28.5, y -104.5..-18.5): 1272 mm3
   piece and 413 mm3 foot into the tray, exactly the "C3: no, Jetson tray 1272" row of the
@@ -643,10 +643,10 @@ Why A3+B3 and not the centred pairs the owner asked for first (`ATTEMPT=mastB3C3
   tray is not an option (D4+D5 are the only holes it can hang from, section 17), and the
   small-board plate cannot go further aft on D1+D2 (rim rule, `PLATE_OFFSET` max 10.75) or
   forward (tyre).
-- **B4+C4** (centre (-5, 0)): the mast bar (x -25.25..15.25) is 27 mm into the Omni cradle
+- B4+C4 (centre (-5, 0)): the mast bar (x -25.25..15.25) is 27 mm into the Omni cradle
   (front at x 2.1): 3006 mm3 mast x pack, 603 mast x cradle, 1822 + 1700 feet x cradle, and
   the C4 piece is 2046 into the Jetson tray as well.
-- **A3+B3**: pieces under the plate at x 18.5..51.5, y 4..78, over the battery bay model
+- A3+B3: pieces under the plate at x 18.5..51.5, y 4..78, over the battery bay model
   (26 mm above its hold-down) and the tub's left wall; nothing else under there. Mast bar
   x 14.75..55.25, y 0.75..81 (legs to y 0 / 82, 6.75 inside the plate edge), 0.25 mm behind
   the plinth's bar, 12.65 ahead of the cradle, 31.6 from the small-board plate. The camera
@@ -718,7 +718,7 @@ half-width so the 8.5 mm diagonal is covered), and that is the wider, safer set 
 Three sectors, 27.2 degrees in total, all between 128 and 198 degrees, i.e. within 52
 degrees either side of dead astern: 4 to 18 degrees right of the tail (both right legs,
 one behind the other) and 32 to 52 degrees left of it (the two left legs, not merged).
-**The forward half, -90 to +90, is clear**; the nearest occlusion starts 38 degrees behind
+The forward half, -90 to +90, is clear; the nearest occlusion starts 38 degrees behind
 the left beam. The sliced-solid check gives the same bearings with slightly narrower widths
 (the legs are 6 mm square, not 8.5 round): (-174.6, -169.4), (-171.4, -162.6), (128.1,
 135.2), (142.7, 148.0). In the driver, mask the analytic sectors, or drop returns under
@@ -748,7 +748,7 @@ relative position; the JSON has the same rows):
 | -15 | (62.8, 142.7) | (10.2, -86.4) | -83.3 | -47.5 | 35.8 |
 | -20 | (65.3, 140.2) | (7.7, -83.9) | -84.8 | -52.5 | 32.3 |
 
-The lidar top would enter the depth image at **-60.6 degrees** of pitch (the RGB image, V
+The lidar top would enter the depth image at -60.6 degrees of pitch (the RGB image, V
 55, at -65.8), three times the mast's -20 limit; at -20 the lidar is still 32 degrees below
 the bottom of the frame. The lidar is almost directly under the lens (19 mm ahead, 93 mm
 down), which is the point of putting the mast right behind it. So `CAM_HEIGHT` stays at
@@ -773,11 +773,11 @@ would have with the placed solids, from the same model):
 | D1 | 115 | -61.5 | small-board plate | | |
 | A2 | 75 | 61.5 | free; plinth wall on its inboard 4.3 mm (alternative lidar-lead pass-through, left side) | no: as A1 | no: plinth 846 |
 | B2 | 75 | 20.5 | lidar plinth | | |
-| C2 | 75 | -20.5 | free, **cable pass-through for the lidar lead**: 21 of its 28.5 mm open between the plinth wall (4.3) and the small-board plate's edge (3.25) | no: as C1 | no: plinth 846, small-board plate 523, hub 876 |
+| C2 | 75 | -20.5 | free, cable pass-through for the lidar lead: 21 of its 28.5 mm open between the plinth wall (4.3) and the small-board plate's edge (3.25) | no: as C1 | no: plinth 846, small-board plate 523, hub 876 |
 | D2 | 75 | -61.5 | small-board plate | | |
 | A3 | 35 | 61.5 | camera mast | | |
 | B3 | 35 | 20.5 | camera mast | | |
-| C3 | 35 | -20.5 | free, **cable pass-through for the camera lead**: open except a 15 x 3.25 corner under the small-board plate; 9 mm from the mast's right rear leg | no: Jetson tray 1272 (this is what rules out the centred mast) | no: small-board plate 276, hub 259 |
+| C3 | 35 | -20.5 | free, cable pass-through for the camera lead: open except a 15 x 3.25 corner under the small-board plate; 9 mm from the mast's right rear leg | no: Jetson tray 1272 (this is what rules out the centred mast) | no: small-board plate 276, hub 259 |
 | D3 | 35 | -61.5 | free, pass-through for the hub and PCA9685 leads (13.5 mm strip open at x 20.75..34.25, the rest under the small-board plate) | no: Jetson tray 541 | no: small-board plate 842, hub 1475 |
 | A4 | -5 | 61.5 | free (under the cradle border) | yes, but the cradle covers it | no: cradle 970, pack 3275 |
 | B4 | -5 | 20.5 | free (under the cradle) | covered | no: cradle 612, pack 3293 |

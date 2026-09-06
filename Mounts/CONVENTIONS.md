@@ -1,7 +1,7 @@
 # Conventions for mounts in this set
 
 Every mount attaches to the car through the clipless mounting system measured in
-`clipless.py` (read its docstring first). Use the **foot** interface, not pegs grown on
+`clipless.py` (read its docstring first). Use the foot interface, not pegs grown on
 the part: subtract `foot_cutout(FLOOR, axis)` from your floor for each foot position and
 the printed `clipless_foot` drops in from above. Feet sit in clipless pieces whose pockets
 are 24 x 24; neighbouring plate holes are 47 to 53 mm apart along the car and 45 to 48 mm

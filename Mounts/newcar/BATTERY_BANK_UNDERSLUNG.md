@@ -8,11 +8,11 @@ part used upright above the plate is the `LAYOUT=above` fallback (NEWCAR_LAYOUT.
 
 ## Component
 
-**Baseus Blade HD 100 W, 20,000 mAh** (PPBL000301): 133.9 x 133.9 x 17.8 mm, 445 g, ports on
+Baseus Blade HD 100 W, 20,000 mAh (PPBL000301): 133.9 x 133.9 x 17.8 mm, 445 g, ports on
 one edge, USB-C 100 W PD (https://www.baseus.com/products/blade-laptop-power-bank-100w-20000mah,
 which lists both Blade models; USD 69.99, out of stock there on 2026-09-05, stocked at
 Walmart/Amazon). The PDO list confirmed for the Blade 100 W (PPBL000001, 161.8 x 133.9 x 17.8,
-506 g, USD 129.99) is 5 V 3 A / 9 V 3 A / 12 V 3 A / **15 V 3 A** / 20 V 5 A
+506 g, USD 129.99) is 5 V 3 A / 9 V 3 A / 12 V 3 A / 15 V 3 A / 20 V 5 A
 (androidcentral.com review); the HD shares the 100 W rating, but confirm 15 V 3 A on the HD
 before buying (a PD tester, or the Adafruit trigger cable: it outputs 5 V if the PDO is
 missing). `BANK_L` / `BANK_W` / `BANK_T` / `BANK_MASS` are parameters; `BANK_L=161.8` is the
@@ -38,8 +38,8 @@ load; the Jetson's 1.6 mm fingers carry 250 g). Both ends are otherwise open: th
 forward on the feet (`BANK_X_OFFSET`) so the tray's rear end (x -131.45 on the car) clears
 the plate's moved rear clamp blocks (2.49 mm) and the rear shock caps.
 
-Height 28.7 (8.6 + 17.8 + 0.3 + 2 lip); hanging, the tray bottom is **31.88 below the plate
-top** (28.7 below the underside of the 3.175 plate). Mass 82.6 cm3, 102 g solid, about 61 g
+Height 28.7 (8.6 + 17.8 + 0.3 + 2 lip); hanging, the tray bottom is 31.88 below the plate
+top (28.7 below the underside of the 3.175 plate). Mass 82.6 cm3, 102 g solid, about 61 g
 at 60 % infill, plus four feet.
 
 The bank clicks into the tray on the bench (hook under the fixed lips, press down past the

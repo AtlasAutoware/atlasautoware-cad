@@ -23,8 +23,8 @@ spec list and dimension drawing on that page):
 
 On the standard-chassis Slash 4x4 (68086-4 exploded view page 2, mirrored at
 https://www.rcscrapyard.net/manuals/traxxas/68086-4/68086-4-002.jpg) the stock Traxxas 2075
-servo bolts **inverted, output shaft down**, to the front bulkhead **6830** (https://traxxas.com/6830x-front-bulkhead)
-with four 3 x 6 mm flat-head screws (3932); the servo saver **6845** hangs below it and drives
+servo bolts inverted, output shaft down, to the front bulkhead 6830 (https://traxxas.com/6830x-front-bulkhead)
+with four 3 x 6 mm flat-head screws (3932); the servo saver 6845 hangs below it and drives
 the bellcranks through servo horn 6846 (the current set is 6845X,
 https://traxxas.com/6845x). There is no separate servo mount part: the pocket is moulded into
 the bulkhead and takes a standard-size case.
@@ -34,7 +34,7 @@ Traxxas servos are 25T (2255 spec table, https://traxxas.com/2255-digital-high-t
 
 ## Verdict
 
-**The INJS235 is a drop-in: do not print anything.** Same 20 mm width, same 49 x 10 hole
+The INJS235 is a drop-in: do not print anything. Same 20 mm width, same 49 x 10 hole
 pattern under the ears, 25T spline, and the Traxxas servo saver 6845/6845X fits its spline
 (use the Traxxas saver, not the INJORA aluminium horn: the 4x4 bellcrank set needs the saver's
 spring). Two things differ by under a millimetre and are worth checking with the servo in

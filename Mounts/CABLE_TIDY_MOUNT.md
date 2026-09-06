@@ -142,7 +142,7 @@ no feet. The rail hangs off the plate's right edge and bolts through two of the 
   (`PAD_IN` 12.75 from the edge; the row-D clipless flange zone starts at -78 only for
   from-above pieces, and D6/D8 are unused), with 5.3 mm holes on the zip-hole line
   (6.75 mm inboard of the edge, 40 mm apart).
-- Fastening: **M5 x 16 button-head screws with M5 nyloc nuts under the plate.** Not the
+- Fastening: M5 x 16 button-head screws with M5 nyloc nuts under the plate. Not the
   M5 x 12 of the brief: the stack is 4 (pad) + 3.175 (plate) = 7.2 mm and a nyloc is 5 mm
   tall with its collar in the last 1.5 mm, so 12 mm leaves the collar unengaged; 16 gives
   3.8 mm past the nut. Printed 6 mm snap pins were considered and rejected: a pin that
