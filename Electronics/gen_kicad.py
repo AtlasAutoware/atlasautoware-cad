@@ -225,6 +225,9 @@ def write_lib_tables(fp_lib_dir, parts=None):
         for lib in libs:
             f.write(f'  (lib (name "{lib}")(type "KiCad")(uri "{fp_lib_dir}/{lib}.pretty")'
                     '(options "")(descr ""))\n')
+        f.write('  (lib (name "atlaspower")(type "KiCad")'
+                '(uri "${KIPRJMOD}/../atlaspower.pretty")(options "")'
+                '(descr "generated footprints"))\n')
         f.write(')\n')
 
 
@@ -245,7 +248,7 @@ if __name__ == '__main__':
     parts, nets = N.build()
     placed = write_schematic(parts)
     write_symbol_library(parts)
-    write_lib_tables(os.environ.get('KICAD_FP_DIR', '/home/eshanki/atlas_pcb/libs/footprints'), parts)
+    write_lib_tables(os.environ.get('KICAD_FP_DIR', '${KIPRJMOD}/../../libs/footprints'), parts)
     write_project()
     print(f'wrote {OUT}')
     print(f'  {len(parts)} symbols, {len(nets)} nets, {len(set(symbol_for(p) for p in parts))} symbol kinds')

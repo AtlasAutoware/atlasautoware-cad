@@ -33,12 +33,19 @@ rails for simultaneous peaks would have pushed the board to 97 W and a lot of he
 | `design.py` | every electrical number, and the checks over them. Run it first. |
 | `netlist.py` | parts and nets, built from `design.py` |
 | `gen_kicad.py` | writes the KiCad project from `netlist.py` |
-| `out/AtlasPower4S/` | the KiCad 9/10 project, schematic PDF, netlist, BOM, ERC report |
+| `gen_footprint.py` | the SRP1265A land pattern, from the datasheet drawing |
+| `layout.py` | the floorplan and the copper plan, with the reasoning |
+| `relax.py` | separates the floorplan until nothing overlaps |
+| `place_check.py` | courtyard and edge checking from real footprint geometry |
+| `gen_pcb.py` | writes the board: placement, zones, routing, via stitching |
+| `libs/footprints/` | the 20 KiCad footprints this board uses, vendored so it builds anywhere |
+| `out/AtlasPower4S/` | the KiCad project, schematic PDF, board, gerbers, drill, BOM, ERC/DRC |
 | `../cad/power_board_mount.py` | the printed tray, on the clipless foot interface |
 
 Regenerate everything:
 
-    python3 design.py && python3 netlist.py && python3 gen_kicad.py
+    python3 design.py && python3 gen_footprint.py && python3 relax.py
+    python3 place_check.py && python3 gen_kicad.py && python3 gen_pcb.py
 
 ## What has actually been verified
 
@@ -58,21 +65,66 @@ Everything below was run, not asserted:
   loading the project-local `sym-lib-table`; they disappear when the project is opened
   normally. 2 are `isolated_pin_label` on `ALERT` and `NC_VESC_5V`, both deliberate.
 
-## What has NOT been verified, and must be before ordering
+## The inductor footprint
 
-1. **The inductor land pattern.** KiCad has no SRP1265A footprint. `L_APV_APH1265` is the
-   same 12.5 x 12.5 x 6.5 body class and is in there as a stand-in, but its pads have not
-   been checked against the Bourns recommended layout. Check that drawing or pick an
-   inductor whose footprint ships with KiCad. This is the one dimension on the board not
-   traceable to a datasheet.
-2. **There is no PCB layout yet.** The project has a schematic, a netlist and a BOM. Board
-   outline, placement and routing are still to do, and for a switching supply the layout is
-   not a formality: input ceramics hard against VIN/GND, the inductor tight to SW, feedback
-   away from the switch node, and a solid ground pour with stitching vias under all three
-   exposed pads. The datasheet's Figure 31 shows the intended arrangement.
-3. **Thermals.** About 8 W total across the three regulators at full load, in SO-8EP
-   packages rated 45 C/W. That needs copper, not hope. Model it once there is a layout.
-4. Prices and stock were read from LCSC on 2026-09-07 and move.
+Built by `gen_footprint.py` from the Bourns SRP1265A datasheet's Recommended Layout: 14.2 mm
+overall span, 8.0 mm gap, 5.0 mm pad height, giving 3.1 mm pads at +-5.55 mm. Read off the
+rendered drawing, not from extracted text, because extraction loses which number belongs to
+which dimension line.
+
+The reading confirms itself: 3.1 x 5.0 is exactly the part's worst-case terminal
+(2.75 + 0.35 by 4.7 + 0.3), which is what a power-inductor land is. Had the 8.0 been
+centre-to-centre rather than the gap, pads would have come out 6.2 mm wide against a 2.75 mm
+terminal, which is not a land pattern anyone draws.
+
+## The layout
+
+4 layers: F.Cu components and local pours, In1.Cu solid ground, In2.Cu VIN distribution,
+B.Cu ground and output pours. 88 x 68 mm, M3 holes on 76 x 56 to match the printed tray.
+
+The board reads left to right in the order power flows: input protection, then the three
+rail blocks stacked in y, then the output connectors. Each rail follows the AP64501
+datasheet Figure 31 - input ceramics against VIN/GND, inductor immediately at SW, feedback
+divider on the quiet side away from the switch node.
+
+`layout.py` holds the hand floorplan (the intent: what sits next to what). `relax.py`
+takes that as a seed and separates it numerically until no courtyard overlaps and nothing
+crosses the board edge, because the hand coordinates were wrong in six places once the
+footprints were real - a 1210 rotated 90 degrees has a 4.6 mm courtyard where I had written
+3.4, and a terminal block's origin is pin 1 rather than its centre.
+
+Routing is deliberate, not autorouted. Power nets are zones; signal nets get L-paths or a
+perpendicular escape-and-return, each candidate checked against every pad of a different
+net. **A connection that cannot be routed cleanly is left unrouted and reported rather than
+shorted** - 20 of them currently, all in the dense compensation clusters.
+
+### DRC status: honest
+
+    659 violations on the first pass  ->  204 now
+
+Fixed along the way, each one a real error: 54 courtyard overlaps, 4 parts hanging off the
+board edge, 90 shorts from blind L-routing, 47 dangling vias, unfilled zones, the INA226's
+exposed pad left unmapped, and library footprints whose built-in 0.2 mm thermal vias are
+under the board's minimum hole size.
+
+**What remains is a cleanup pass in the GUI, and the board should not be ordered until it is
+done.** Roughly: 38 unconnected (the 20 unrouted signal connections above, plus ground
+islands), 28 hole clearance and 25 shorts from ground vias placed too near other copper, 27
+isolated copper regions and 25 starved thermals in the pours, and 25 `lib_footprint_mismatch`
+which are benign - the footprints are emitted inline rather than linked to a library.
+
+None of that is a design error; it is the last 10 % of a layout, which is the part a person
+does with a mouse and the ratsnest visible. What the generator gives you is a board with
+every part placed sensibly, every plane poured, the high-current paths done as copper rather
+than traces, and a list of exactly what is left.
+
+### Thermals
+
+About 8 W total across three SO-8EP packages rated 45 C/W. Each exposed pad gets seven
+stitching vias into the ground plane, which is what makes that 45 C/W figure meaningful.
+Worth measuring on the first board rather than trusting.
+
+Prices and stock were read from LCSC on 2026-09-07 and move.
 
 ## Two deliberate oddities
 
