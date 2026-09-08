@@ -74,9 +74,27 @@ ESC_STANDOFF = float(os.environ.get('ESC_STANDOFF', 0.0))   # printed standoff b
 ESC_STANDOFF_OD = 8.0
 TUB_DEPTH = 28.0                                        # board_layout CHASSIS TUB_DEPTH, for the stub
 
+# MODE=posts: the Slash tub has no rail to clamp. The stock ESC screws down onto two M3
+# posts moulded into the tub floor, 38.5 mm apart for the XL-5 layout and 46.0 mm for the
+# VXL-3S one. Three independent community mounts measured from their STLs (Printables
+# 287721 "lines up with the XL-5": 2 x 3.5 mm, 38.5 apart; 960017 Hobbywing: 2 x 3.0, 38.6;
+# 1129058 "uses the VXL-3S holes": 2 x 3.0, 46.0). So this mode drops the legs, the rail
+# slot and the strap slots and carries both hole pairs on a solid centre strip; screws go
+# down through the tray floor into the posts, the FSESC snaps in on top afterwards.
+# HOLE_AXIS is which tray axis the post pair lies along: 'y' = along the car (default).
+MODE = os.environ.get('MODE', 'rail')
+POST_PITCHES = [float(v) for v in os.environ.get('POST_PITCHES', '38.5,46.0').split(',')]
+HOLE_AXIS = os.environ.get('HOLE_AXIS', 'y')
+POST_HOLE_D = 3.4
+STRIP_W = 12.0
+if MODE == 'posts':
+    N_MODE = '_posts'
+else:
+    N_MODE = ''
+
 OUT = os.path.join(HERE, 'out')
 os.makedirs(OUT, exist_ok=True)
-N = 'vesc_tub_bracket' + os.environ.get('OUT_SUFFIX', '')
+N = 'vesc_tub_bracket' + N_MODE + os.environ.get('OUT_SUFFIX', '')
 
 OL, OW, PAD_H, PAD_W, PAD_D, FLOOR = VESC.OL, VESC.OW, VESC.PAD_H, VESC.PAD_W, VESC.PAD_D, VESC.FLOOR
 X_RAIL0, X_RAIL1 = RAIL_X_OUT, RAIL_X_OUT + RAIL_W               # rail faces, tray x
@@ -90,7 +108,33 @@ SLOT_OUT = (X_LEG_OUT[0] - STRAP_GAP - STRAP_SLOT[1], X_LEG_OUT[0] - STRAP_GAP)
 SLOT_IN = (X_LEG_IN[1] + STRAP_GAP, X_LEG_IN[1] + STRAP_GAP + STRAP_SLOT[1])
 
 
+def post_mount():
+    """Tray with both post-hole pairs on a centre strip; no legs, no supports."""
+    t = VESC.tray()
+    for (fx, _) in VESC.FEET:
+        t = t.union(box(fx - PAD_W / 2, fx + PAD_W / 2, -PAD_D / 2, PAD_D / 2, 0, PAD_H).edges('|Z').fillet(2))
+    reach = max(POST_PITCHES) / 2 + 6.0
+    if HOLE_AXIS == 'y':
+        t = t.union(box(-STRIP_W / 2, STRIP_W / 2, -reach, reach, 0, FLOOR))
+    else:
+        t = t.union(box(-reach, reach, -STRIP_W / 2, STRIP_W / 2, 0, FLOOR))
+    # The two patterns are 3.75 mm apart per side; two 3.4 holes that close leave 0.35 mm
+    # of web, so each side gets one slot spanning both, and a washer under the screw head.
+    lo, hi = min(POST_PITCHES) / 2, max(POST_PITCHES) / 2
+    for s_ in (-1, 1):
+        c = s_ * (lo + hi) / 2
+        L = hi - lo + POST_HOLE_D
+        if HOLE_AXIS == 'y':
+            slot = cq.Workplane('XY').workplane(offset=-1).center(0.0, c).slot2D(L, POST_HOLE_D, 90).extrude(PAD_H + 2)
+        else:
+            slot = cq.Workplane('XY').workplane(offset=-1).center(c, 0.0).slot2D(L, POST_HOLE_D, 0).extrude(PAD_H + 2)
+        t = t.cut(slot)
+    return t
+
+
 def saddle():
+    if MODE == 'posts':
+        return post_mount()
     t = VESC.tray()
     # fill the foot recesses in the pads: no feet on the tub
     for (fx, _) in VESC.FEET:
@@ -135,6 +179,29 @@ def rail_stub(length=None):
 def checks(s):
     env, stub = envelope(), rail_stub()
     bb = s.val().BoundingBox()
+    if MODE == 'posts':
+        # every post hole must be a clean through-hole in solid floor: a 3.4 mm pin dropped
+        # through it hits nothing, and a 9 mm washer face around it lands on floor
+        holes, clear, bearing = [], [], []
+        lo, hi = min(POST_PITCHES) / 2, max(POST_PITCHES) / 2
+        for pitch in POST_PITCHES:
+            for s_ in (-1, 1):
+                hx, hy = (0.0, s_ * pitch / 2) if HOLE_AXIS == 'y' else (s_ * pitch / 2, 0.0)
+                holes.append((hx, hy))
+                pin = cq.Workplane('XY').workplane(offset=-10).center(hx, hy).circle(POST_HOLE_D / 2 - 0.05).extrude(PAD_H + 20)
+                # an M3 washer (7 mm OD) centred on the screw, minus the slot it sits over
+                slotw = (hi - lo + POST_HOLE_D + 0.6)
+                ring = cq.Workplane('XY').center(hx, hy).circle(3.5).extrude(FLOOR)
+                clear.append(inter(s, pin)); bearing.append(round(inter(s, ring) / ring.val().Volume(), 3))
+        return {
+            'solids': len(s.val().Solids()),
+            'mount_x_envelope': inter(s, env),
+            'post_holes': holes,
+            'pin_through_each_hole_hits': clear,
+            'floor_under_each_washer_fraction': bearing,
+            'screw_head_room_under_case': PAD_H - FLOOR,
+            'outline': (round(bb.xlen, 1), round(bb.ylen, 1), round(bb.zlen, 1)),
+        }
     # the legs must grip: rail pushed against either leg
     push = RAIL_CLR - 0.01
     return {

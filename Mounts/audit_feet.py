@@ -29,6 +29,7 @@ SET = [
     ('vesc_tub_bracket',       'vesc_tub_bracket_mount',  {},                                              'saddle', None, None),
     ('vesc_fsesc67',           'vesc_fsesc67_mount',      {'RETAIN': 'recess'},                            'tray', 'feet', PLATE),
     ('lipo_smc_9000',          'lipo_smc_9000_mount',     {},                                              'frame', 'feet', PLATE),
+    ('power_board_mount',      'power_board_mount',       {},                                              'plate', 'feet', PLATE),
     ('tim561',                 'tim561_mount',            {},                                              'plinth', 'feet', 'v2'),
     ('battery_bank_underslung','battery_bank_underslung', {},                                              'tray', 'feet', 'v2'),
 ]
@@ -148,7 +149,8 @@ def stl_pitch(path, floor_z=1.0):
 if __name__ == '__main__' and os.environ.get('STL', '1') == '1':
     print('\nSTL files on disk (recess parts, peg holes at z=1):')
     for name in ['omni20_cradle', 'omni20_cradle_v2', 'liteon_45w_brick_v2', 'small_board_plate_v2',
-                 'vesc_fsesc67', 'vesc_fsesc67_v2', 'lipo_smc_9000', 'lipo_smc_9000_v2']:
+                 'vesc_fsesc67', 'vesc_fsesc67_v2', 'lipo_smc_9000', 'lipo_smc_9000_v2',
+                 'power_board_mount']:
         path = os.path.join(HERE, 'out', name + '.stl')
         if not os.path.exists(path): print(f'  {name:24s} missing'); continue
         cs = stl_pitch(path, 6.0 if 'vesc' in name else 1.0)
